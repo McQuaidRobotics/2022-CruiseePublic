@@ -4,6 +4,7 @@
 
 package frc.robot;
 
+import edu.wpi.first.wpilibj.DataLogManager;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.GenericHID;
 import edu.wpi.first.wpilibj.TimedRobot;
@@ -55,6 +56,8 @@ public class Robot extends TimedRobot {
         robotContainer.setLEDs(0);
 
         SmartDashboard.putNumber("Climb Time", 45);
+
+        DataLogManager.start("/U");
     }
 
     /**
