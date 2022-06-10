@@ -9,9 +9,13 @@ import com.revrobotics.CANSparkMax.IdleMode;
 import com.revrobotics.CANSparkMaxLowLevel.MotorType;
 import com.revrobotics.RelativeEncoder;
 import com.revrobotics.SparkMaxPIDController;
+import edu.wpi.first.util.datalog.DataLog;
+import edu.wpi.first.util.datalog.DoubleLogEntry;
 import edu.wpi.first.wpilibj.DigitalInput;
-import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
+import edu.wpi.first.wpilibj.shuffleboard.Shuffleboard;
+import edu.wpi.first.wpilibj.shuffleboard.ShuffleboardTab;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
+import frc.robot.Robot;
 import frc.robot.constants.kCANIDs;
 import frc.robot.constants.kDIO;
 
@@ -22,6 +26,10 @@ public class Index extends SubsystemBase {
   private SparkMaxPIDController pidController;
   private DigitalInput beambreak;
   private int ballsIndexed = 0;
+
+  private ShuffleboardTab tab = Shuffleboard.getTab("Index");
+  private DoubleLogEntry indexAmperageLog;
+  private DoubleLogEntry rotationNumberLog;
 
   public Index() {
     motor = new CANSparkMax(kCANIDs.IDX_MOTOR, MotorType.kBrushless);
@@ -38,14 +46,19 @@ public class Index extends SubsystemBase {
     pidController.setOutputRange(-1, 1);
 
     beambreak = new DigitalInput(kDIO.BEAMBREAK);
+
+    tab.addNumber("Balls", this::getBallsIndexed).withPosition(0, 0).withSize(1, 1);
+    tab.addBoolean("Beambreak", beambreak::get).withPosition(1, 0).withSize(1, 1);
+
+    DataLog log = Robot.getDataLog();
+    indexAmperageLog = new DoubleLogEntry(log, "Idx/Index-Amps");
+    rotationNumberLog = new DoubleLogEntry(log, "Idx/Rotations");
   }
 
   @Override
   public void periodic() {
-    SmartDashboard.putNumber("A-Idx", motor.getOutputCurrent());
-    SmartDashboard.putBoolean("Beam-Idx", beambreak.get());
-    SmartDashboard.putNumber("rotations", encoder.getPosition());
-    SmartDashboard.putNumber("balls", ballsIndexed);
+    indexAmperageLog.append(motor.getOutputCurrent());
+    rotationNumberLog.append(getIndexPosition());
   }
 
   public boolean isBallBlockingBeam(){

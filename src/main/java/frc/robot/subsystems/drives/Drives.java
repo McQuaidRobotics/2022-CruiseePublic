@@ -12,6 +12,8 @@ import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.kinematics.SwerveDriveKinematics;
 import edu.wpi.first.math.kinematics.SwerveDriveOdometry;
 import edu.wpi.first.math.kinematics.SwerveModuleState;
+import edu.wpi.first.util.datalog.DataLog;
+import edu.wpi.first.util.datalog.DoubleLogEntry;
 import edu.wpi.first.wpilibj.shuffleboard.BuiltInLayouts;
 import edu.wpi.first.wpilibj.shuffleboard.Shuffleboard;
 import edu.wpi.first.wpilibj.shuffleboard.ShuffleboardLayout;
@@ -19,6 +21,7 @@ import edu.wpi.first.wpilibj.shuffleboard.ShuffleboardTab;
 import edu.wpi.first.wpilibj.smartdashboard.Field2d;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
+import frc.robot.Robot;
 import frc.robot.constants.kCANIDs;
 import frc.robot.constants.kSwerve;
 
@@ -43,6 +46,8 @@ public class Drives extends SubsystemBase {
     );
     private final SwerveDriveOdometry odometry;
     private final Field2d field = new Field2d();
+
+    private final DoubleLogEntry pigeonLog;
 
     public Drives() {
         pigeonTwo.configFactoryDefault();
@@ -70,6 +75,9 @@ public class Drives extends SubsystemBase {
             moduleLayout.addNumber("Falcon Rotation", () -> module.getState().angle.getDegrees());
             moduleLayout.addNumber("Speed MPS", () -> module.getState().speedMetersPerSecond);
         }
+
+        DataLog log = Robot.getDataLog();
+        pigeonLog = new DoubleLogEntry(log, "Drives/pigeonRot");
     }
 
     /**
@@ -130,6 +138,8 @@ public class Drives extends SubsystemBase {
 
     @Override
     public void periodic() {
+        pigeonLog.append(pigeonTwo.getRotation2d().getDegrees());
+
         odometry.update(pigeonTwo.getRotation2d(), getRealStates());
         field.setRobotPose(getPose());
     }

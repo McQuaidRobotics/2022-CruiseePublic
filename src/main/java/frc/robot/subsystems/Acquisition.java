@@ -1,17 +1,21 @@
 package frc.robot.subsystems;
+
 import com.revrobotics.CANSparkMax;
 import com.revrobotics.CANSparkMax.ControlType;
 import com.revrobotics.CANSparkMax.IdleMode;
 import com.revrobotics.CANSparkMaxLowLevel.MotorType;
 import com.revrobotics.RelativeEncoder;
 import com.revrobotics.SparkMaxPIDController;
+import edu.wpi.first.util.datalog.DataLog;
+import edu.wpi.first.util.datalog.DoubleLogEntry;
 import edu.wpi.first.wpilibj.PneumaticsModuleType;
 import edu.wpi.first.wpilibj.Solenoid;
-import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
+import edu.wpi.first.wpilibj.shuffleboard.Shuffleboard;
+import edu.wpi.first.wpilibj.shuffleboard.ShuffleboardTab;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
+import frc.robot.Robot;
 import frc.robot.constants.kCANIDs;
 import frc.robot.constants.kPneumatics;
-
 
 
 public class Acquisition extends SubsystemBase {
@@ -20,6 +24,10 @@ public class Acquisition extends SubsystemBase {
   private RelativeEncoder encoder;
   private SparkMaxPIDController pid;
   private Solenoid arms = new Solenoid(kCANIDs.PNEUMATIC_HUB, PneumaticsModuleType.REVPH, kPneumatics.ACQ_ARMS);
+
+  private ShuffleboardTab tab = Shuffleboard.getTab("Acquisition");
+  private DoubleLogEntry armsAmperageLog;
+
   public Acquisition() {
     motor = new CANSparkMax(kCANIDs.ACQ_MOTOR, MotorType.kBrushless);
     motor.restoreFactoryDefaults();
@@ -33,18 +41,16 @@ public class Acquisition extends SubsystemBase {
     pid.setD(0);
     pid.setFF(0.000156);
     pid.setIZone(0);
-    pid.setOutputRange(-1,1);    
-  }
+    pid.setOutputRange(-1,1);
 
-  /*public void setArmsExtended(boolean isExtended) {
-    arms.set(isExtended);}*/
-    /*public boolean getArmsExtended(){
-    return arms.get();
-  }*/
-  
-  
-  
-    public void extendArms(){
+    tab.addBoolean("Arms Extended", this::areArmsExtended).withPosition(0, 0).withSize(1, 1);
+    tab.addNumber("Actual RPM", this::getRollerRPM).withPosition(1, 1).withSize(1, 1);
+    tab.addNumber("Setpoint RPM", this::getSetpointRPM).withPosition(1, 0).withSize(1, 1);
+
+    DataLog log = Robot.getDataLog();
+    armsAmperageLog = new DoubleLogEntry(log, "Acq/Roller-Amps");
+  }
+  public void extendArms(){
     arms.set(true);
   }
   public void retractArms(){
@@ -72,24 +78,12 @@ public class Acquisition extends SubsystemBase {
     return encoder.getVelocity();
   }
 
-
-  
   @Override
   public void periodic() {
-    SmartDashboard.putNumber("A-Acq", motor.getOutputCurrent());
-    SmartDashboard.putNumber("Acq-RPM", getRollerRPM());
-    SmartDashboard.putNumber("Acq-setpointRPM", getSetpointRPM());
-    SmartDashboard.putBoolean("Acq-armsOut", areArmsExtended());//make it green or red box
-    // This method will be called once per scheduler run
+    armsAmperageLog.append(motor.getOutputCurrent());
   }
 
   @Override
   public void simulationPeriodic() {
-    // This method will be called once per scheduler run during simulation
   }
-
-  
-
-
-
 }

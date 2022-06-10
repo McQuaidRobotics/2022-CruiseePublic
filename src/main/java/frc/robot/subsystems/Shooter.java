@@ -9,8 +9,12 @@ import com.revrobotics.CANSparkMax.IdleMode;
 import com.revrobotics.CANSparkMaxLowLevel.MotorType;
 import com.revrobotics.RelativeEncoder;
 import com.revrobotics.SparkMaxPIDController;
-import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
+import edu.wpi.first.util.datalog.DataLog;
+import edu.wpi.first.util.datalog.DoubleLogEntry;
+import edu.wpi.first.wpilibj.shuffleboard.Shuffleboard;
+import edu.wpi.first.wpilibj.shuffleboard.ShuffleboardTab;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
+import frc.robot.Robot;
 import frc.robot.constants.kCANIDs;
 
 
@@ -25,6 +29,10 @@ public class Shooter extends SubsystemBase {
 
   private double setpointVelocityFront = 0;
   private double setpointVelocityBack = 0;
+
+  private final ShuffleboardTab tab = Shuffleboard.getTab("Shooter");
+  private final DoubleLogEntry shooterFrontAmpsLog;
+  private final DoubleLogEntry shooterBackAmpsLog;
 
   public Shooter() {
     motorFront = new CANSparkMax(kCANIDs.SHOOTER_MOTOR_FRONT, MotorType.kBrushless);
@@ -56,14 +64,22 @@ public class Shooter extends SubsystemBase {
     pidBack.setFF(0.000015);
     pidBack.setIZone(0);
     pidBack.setOutputRange(-1,1);
+
+    tab.addNumber("Setpoint RPM Front", () -> setpointVelocityFront).withPosition(0, 0).withSize(0, 0);
+    tab.addNumber("Actual RPM Front", this::getVelocityFront).withPosition(1, 0).withSize(0, 0);
+    tab.addNumber("Setpoint RPM Back", () -> setpointVelocityBack).withPosition(0, 1).withSize(0, 0);
+    tab.addNumber("Actual RPM Back", this::getVelocityBack).withPosition(1, 1).withSize(0, 0);
+
+    DataLog log = Robot.getDataLog();
+    shooterFrontAmpsLog = new DoubleLogEntry(log, "Shooter/Front-Amps");
+    shooterBackAmpsLog = new DoubleLogEntry(log, "Shooter/Back-Amps");
   }
 
   public void setVelocityFront(double setpoint) {
     setpointVelocityFront = setpoint;
     if(setpointVelocityFront != 0){
       pidFront.setReference(setpointVelocityFront, CANSparkMax.ControlType.kVelocity);
-    }
-    else{
+    } else {
       motorFront.set(0);
     }
   }
@@ -90,17 +106,14 @@ public class Shooter extends SubsystemBase {
 
   @Override
   public void periodic() {
-    SmartDashboard.putNumber("A-ShtFrnt", motorFront.getOutputCurrent());
-    SmartDashboard.putNumber("shooter/actual Velocity Shooter Front", encoderFront.getVelocity());
-    SmartDashboard.putNumber("shooter/setpoint Velocity Shooter", setpointVelocityFront);
-    SmartDashboard.putNumber("A-ShtBck", motorBack.getOutputCurrent());
-    SmartDashboard.putNumber("shooter/actual Velocity Shooter Back", encoderBack.getVelocity());
+    shooterFrontAmpsLog.append(motorFront.getOutputCurrent());
+    shooterBackAmpsLog.append(motorBack.getOutputCurrent());
   }
 
   @Override
   public void simulationPeriodic() {
-    // This method will be called once per scheduler run during simulation
   }
+
   public static class ShooterRPMS{
     public double RPMFront;
     public double RPMBack;

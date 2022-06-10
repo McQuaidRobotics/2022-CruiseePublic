@@ -4,6 +4,7 @@
 
 package frc.robot;
 
+import edu.wpi.first.util.datalog.DataLog;
 import edu.wpi.first.wpilibj.DataLogManager;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.GenericHID;
@@ -23,6 +24,8 @@ import frc.robot.utils.AutoUtil;
 public class Robot extends TimedRobot {
     private static RobotContainer robotContainer;
 
+    private static DataLog dataLog;
+
     private SendableChooser<AutoUtil.Routine> autoChooser = new SendableChooser<>();
 
     /**
@@ -31,14 +34,11 @@ public class Robot extends TimedRobot {
      */
     @Override
     public void robotInit() {
-        // Instantiate our RobotContainer.    This will perform all our button bindings, and put our
-        // autonomous chooser on the dashboard.
-        SmartDashboard.putBoolean("checkFrontRight", false);
-        SmartDashboard.putBoolean("checkFrontLeft", false);
-        SmartDashboard.putBoolean("checkBackRight", false);
-        SmartDashboard.putBoolean("checkBackLeft", false);
+        DataLogManager.start("/U");
+        dataLog = DataLogManager.getLog();
+        DriverStation.startDataLog(dataLog);
+
         robotContainer = new RobotContainer();
-        //robotContainer.acquisition.extendArms(false);
 
         AutoUtil.Routine[] routines = AutoUtil.Routine.values();
         for (AutoUtil.Routine routine : routines) {
@@ -56,8 +56,6 @@ public class Robot extends TimedRobot {
         robotContainer.setLEDs(0);
 
         SmartDashboard.putNumber("Climb Time", 45);
-
-        DataLogManager.start("/U");
     }
 
     /**
@@ -130,5 +128,9 @@ public class Robot extends TimedRobot {
 
     public static void setLED(int pattern) {
         robotContainer.setLEDs(pattern);
+    }
+
+    public static DataLog getDataLog() {
+        return dataLog;
     }
 }
