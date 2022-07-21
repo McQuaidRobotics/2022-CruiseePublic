@@ -14,10 +14,7 @@ import frc.robot.subsystems.Shooter.ShooterRPMS;
 // information, see:
 // https://docs.wpilib.org/en/stable/docs/software/commandbased/convenience-features.html
 public class ComplexSpinUpShooter extends SequentialCommandGroup {
-  /** Creates a new ComplexSpinUpShooter. */
   public ComplexSpinUpShooter(Shooter shooter, Acquisition acquisition, ShooterRPMS rpms) {
-    // Add your commands in the addCommands() call, e.g.
-    // addCommands(new FooCommand(), new BarCommand());
     addCommands(
       new InstantCommand(() -> acquisition.extendArms()),
       new CommandRunShooter(shooter, rpms, true)

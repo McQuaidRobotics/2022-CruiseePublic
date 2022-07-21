@@ -32,9 +32,6 @@ public class CommandLevelArm extends CommandBase {
   }
 
   @Override
-  public void end(boolean interrupted) {}
-
-  @Override
   public boolean isFinished() {
     return Math.abs(pigeonTwo.getRoll()) < kClimb.CLIMB_ANGLE_ALLOWED_ERROR_GENERAL;
   }

@@ -12,13 +12,12 @@ import frc.robot.subsystems.climber.Climber;
 import java.util.function.DoubleSupplier;
 
 public class DefaultClimber extends CommandBase {
-    /** Creates a new DefaultClimber. */
     private final Climber climber;
-    private final DoubleSupplier innerReach;
-    private final DoubleSupplier innerAngle;
-    private final DoubleSupplier outerReach;
-    private final DoubleSupplier outerAngle;
+
+    private final DoubleSupplier innerReach, innerAngle, outerReach, outerAngle;
+
     private boolean isCoast;
+
     public DefaultClimber(Climber climber,
                             DoubleSupplier innerReach, DoubleSupplier innerAngle,
                             DoubleSupplier outerReach, DoubleSupplier outerAngle) {
@@ -30,20 +29,19 @@ public class DefaultClimber extends CommandBase {
         this.outerAngle = outerAngle;
     }
 
-    // Called when the command is initially scheduled.
     @Override
     public void initialize() {
         this.isCoast = false;
         SmartDashboard.putBoolean("isCoast", isCoast);
     }
 
-    // Called every time the scheduler runs while the command is scheduled.
     @Override
     public void execute() {
         climber.innerArm.moveReachPOut(RobotContainer.modifyAxis(innerReach.getAsDouble()));
         climber.innerArm.moveAnglePOut(RobotContainer.modifyAxis(innerAngle.getAsDouble()));
         climber.outerArm.moveReachPOut(RobotContainer.modifyAxis(outerReach.getAsDouble()));
         climber.outerArm.moveAnglePOut(RobotContainer.modifyAxis(outerAngle.getAsDouble()));
+
         isCoast = SmartDashboard.getBoolean("isCoast", isCoast);
         if(isCoast) {
             climber.setToCoast();
@@ -52,11 +50,6 @@ public class DefaultClimber extends CommandBase {
         }
     }
 
-    // Called once the command ends or is interrupted.
-    @Override
-    public void end(boolean interrupted) {}
-
-    // Returns true when the command should end.
     @Override
     public boolean isFinished() {
         return false;

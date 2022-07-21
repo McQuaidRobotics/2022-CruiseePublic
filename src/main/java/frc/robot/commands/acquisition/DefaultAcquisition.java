@@ -12,9 +12,6 @@ public class DefaultAcquisition extends CommandBase {
     addRequirements(acquisition);
   }
 
-
-  // Called every time the scheduler runs while the command is scheduled.
-  
   public void execute(){
     if (acquisition.getSetpointRPM() == 0) {
       acquisition.stopRollersByVoltage();
@@ -22,15 +19,5 @@ public class DefaultAcquisition extends CommandBase {
       acquisition.extendArms();
       acquisition.runClosedLoopRPM();
     }
-  }
-
-  // Called once the command ends or is interrupted.
-  @Override
-  public void end(boolean interrupted) {}
-
-  // Returns true when the command should end.
-  @Override
-  public boolean isFinished() {
-    return false;
   }
 }

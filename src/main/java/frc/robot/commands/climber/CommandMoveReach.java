@@ -10,12 +10,13 @@ import frc.robot.constants.kClimb;
 import frc.robot.subsystems.climber.ClimberArm;
 
 public class CommandMoveReach extends CommandBase {
-  /** Creates a new CommandSetReach. */
   private final ClimberArm arm;
+
   private final double position;
   private final boolean useCurrentLimits;
   private final double currentLimit;
   boolean hold;
+
   public CommandMoveReach(ClimberArm arm, double position, boolean hold){
     this.arm = arm;
     this.position = position;
@@ -31,18 +32,11 @@ public class CommandMoveReach extends CommandBase {
     this.currentLimit = currentLimit;
   }
 
-  // Called when the command is initially scheduled.
-  @Override
-  public void initialize() {
-  }
-
-  // Called every time the scheduler runs while the command is scheduled.
   @Override
   public void execute() {
     arm.setReachSetpoint(position/kClimb.CLIMB_ROTATION_TO_INCH);
   }
 
-  // Called once the command ends or is interrupted.
   @Override
   public void end(boolean interrupted) {
     if(!hold){
@@ -50,7 +44,6 @@ public class CommandMoveReach extends CommandBase {
     }
   }
 
-  // Returns true when the command should end.
   @Override
   public boolean isFinished() {
     double reachError = arm.calculateReachError();

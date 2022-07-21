@@ -17,10 +17,7 @@ import frc.robot.subsystems.Shooter.ShooterRPMS;
 // information, see:
 // https://docs.wpilib.org/en/stable/docs/software/commandbased/convenience-features.html
 public class ComplexShootBalls extends SequentialCommandGroup {
-  /** Creates a new ComplexShootBalls. */
   public ComplexShootBalls(Shooter shooter, Index index, Acquisition acquisition, int balls, ShooterRPMS rpms) {
-    // Add your commands in the addCommands() call, e.g.
-    // addCommands(new FooCommand(), new BarCommand());
     addCommands(
       new InstantCommand(() -> acquisition.extendArms()),
       new InstantCommand(() -> acquisition.setRollerRPM(0)),

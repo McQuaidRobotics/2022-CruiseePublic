@@ -10,79 +10,73 @@ import frc.robot.constants.kClimb;
 import frc.robot.subsystems.climber.ClimberArm;
 
 public class CommandMoveAngle extends CommandBase {
-  /** Creates a new CommandSetReach. */
   private final ClimberArm arm;
   private final double angle;
   private final double angleErrorMin;
-  private final CurrentLimit useCurrentLimits;
+  private final CurrentLimitType currentCurrentLimitType;
   private boolean hold;
-  public enum CurrentLimit{
+
+  public enum CurrentLimitType {
     ON,
     OFF,
     SMART,
     BOTH
   }
   private final double currentLimit;
-  public CommandMoveAngle(ClimberArm arm, double angle, CurrentLimit useCurrentLimits, double angleErrorMin){
-    this.arm = arm;
-    this.angle = angle;
-    this.useCurrentLimits = useCurrentLimits;
-    this.angleErrorMin = angleErrorMin;
-    this.currentLimit = 0;
+
+  public CommandMoveAngle(ClimberArm arm, double angle, CurrentLimitType currentLimitType, double angleErrorMin){
+    this(arm, angle, currentLimitType, angleErrorMin, 0);
   }
-  public CommandMoveAngle(ClimberArm arm, double angle, CurrentLimit useCurrentLimits, double angleErrorMin, double currentLimit){
+
+  public CommandMoveAngle(ClimberArm arm, double angle, CurrentLimitType currentLimitType, double angleErrorMin, double currentLimit){
     this.arm = arm;
     this.angle = angle;
-    this.useCurrentLimits = useCurrentLimits;
+    this.currentCurrentLimitType = currentLimitType;
     this.angleErrorMin = angleErrorMin;
     this.currentLimit = currentLimit;
     this.hold = true;
   }
+
   public CommandMoveAngle(ClimberArm arm, double angle, double currentLimit){
     this.arm = arm;
     this.angle = angle;
-    this.useCurrentLimits = CurrentLimit.ON;
+    this.currentCurrentLimitType = CurrentLimitType.ON;
     this.angleErrorMin = 1;
     this.currentLimit = currentLimit;
     this.hold = false;
   }
 
-  // Called when the command is initially scheduled.
   @Override
   public void initialize() {
-    if(useCurrentLimits == CurrentLimit.SMART || useCurrentLimits == CurrentLimit.BOTH){
+    if(currentCurrentLimitType == CurrentLimitType.SMART || currentCurrentLimitType == CurrentLimitType.BOTH){
       arm.setAngleSmartLimit(kClimb.ANGLE_SMART_CURRENT);
     }
   }
 
-  // Called every time the scheduler runs while the command is scheduled.
   @Override
   public void execute() {
     arm.setAngleSetpoint(angle/kClimb.CLIMB_ROTATION_TO_DEGREE);
   }
 
-  // Called once the command ends or is interrupted.
   @Override
   public void end(boolean interrupted) {
     if(!hold){
       arm.moveAnglePOut(0);
     }
 
-    if(useCurrentLimits == CurrentLimit.SMART || useCurrentLimits == CurrentLimit.BOTH){
+    if(currentCurrentLimitType == CurrentLimitType.SMART || currentCurrentLimitType == CurrentLimitType.BOTH){
       arm.setAngleSmartLimit(150);
     }
   }
 
-  // Returns true when the command should end.
   @Override
   public boolean isFinished() {
     double angleError = arm.calculateAngleError();
     SmartDashboard.putNumber("angle Error", angleError);
     // Check for current spike
-    boolean isAtStop = ((useCurrentLimits == CurrentLimit.ON || useCurrentLimits == CurrentLimit.BOTH)
+    boolean isAtStop = ((currentCurrentLimitType == CurrentLimitType.ON || currentCurrentLimitType == CurrentLimitType.BOTH)
                              && arm.getAngleCurrent() > currentLimit);
     if(isAtStop){System.out.println("Current limit reached, at stop: " + arm.getAngleCurrent());}
-    System.out.println("Current: " + arm.getAngleCurrent());
     return angleError < angleErrorMin || isAtStop;
   }
 }

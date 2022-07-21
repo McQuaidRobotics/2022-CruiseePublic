@@ -6,22 +6,24 @@ package frc.robot.commands.climber;
 
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.CommandBase;
-import frc.robot.commands.climber.CommandMoveAngle.CurrentLimit;
+import frc.robot.commands.climber.CommandMoveAngle.CurrentLimitType;
 import frc.robot.constants.kClimb;
 import frc.robot.subsystems.climber.ClimberArm;
 
 public class CommandMoveAngleDebounced extends CommandBase {
-  /** Creates a new CommandSetReach. */
   private final ClimberArm arm;
+
   private final double angle;
   private final double angleErrorMin;
-  private final CurrentLimit useCurrentLimits;
-  private boolean hold;
+
+  private final CurrentLimitType useTypeCurrentLimits;
+
   private final double currentLimit;
-  public CommandMoveAngleDebounced(ClimberArm arm, double angle, CurrentLimit useCurrentLimits, double angleErrorMin, double currentLimit){
+
+  public CommandMoveAngleDebounced(ClimberArm arm, double angle, CurrentLimitType useTypeCurrentLimits, double angleErrorMin, double currentLimit){
     this.arm = arm;
     this.angle = angle;
-    this.useCurrentLimits = useCurrentLimits;
+    this.useTypeCurrentLimits = useTypeCurrentLimits;
     this.angleErrorMin = angleErrorMin;
     this.currentLimit = currentLimit;
   }
@@ -29,7 +31,7 @@ public class CommandMoveAngleDebounced extends CommandBase {
   // Called when the command is initially scheduled.
   @Override
   public void initialize() {
-    if(useCurrentLimits == CurrentLimit.SMART || useCurrentLimits == CurrentLimit.BOTH){
+    if(useTypeCurrentLimits == CurrentLimitType.SMART || useTypeCurrentLimits == CurrentLimitType.BOTH){
       arm.setAngleSmartLimit(kClimb.ANGLE_SMART_CURRENT);
     }
   }
@@ -43,11 +45,7 @@ public class CommandMoveAngleDebounced extends CommandBase {
   // Called once the command ends or is interrupted.
   @Override
   public void end(boolean interrupted) {
-    if(!hold){
-      arm.moveAnglePOut(0);
-    }
-
-    if(useCurrentLimits == CurrentLimit.SMART || useCurrentLimits == CurrentLimit.BOTH){
+    if(useTypeCurrentLimits == CurrentLimitType.SMART || useTypeCurrentLimits == CurrentLimitType.BOTH){
       arm.setAngleSmartLimit(150);
     }
   }
@@ -58,7 +56,7 @@ public class CommandMoveAngleDebounced extends CommandBase {
     double angleError = arm.calculateAngleError();
     SmartDashboard.putNumber("angle Error", angleError);
     // Check for current spike
-    boolean isAtStop = ((useCurrentLimits == CurrentLimit.ON || useCurrentLimits == CurrentLimit.BOTH)
+    boolean isAtStop = ((useTypeCurrentLimits == CurrentLimitType.ON || useTypeCurrentLimits == CurrentLimitType.BOTH)
                              && arm.getAngleCurrent() > currentLimit);
     if(isAtStop){System.out.println("Current limit reached, at stop: " + arm.getAngleCurrent());}
     System.out.println("Current: " + arm.getAngleCurrent());
