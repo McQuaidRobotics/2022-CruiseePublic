@@ -19,8 +19,8 @@ public class Climber extends SubsystemBase {
     /** Creates a new Climber. */
     public ClimberArm outerArm;
     public ClimberArm innerArm;
-    private DoubleSolenoid lock = new DoubleSolenoid(kCANIDs.PNEUMATIC_HUB, PneumaticsModuleType.REVPH, kPneumatics.CLIMB_BREAK_2, kPneumatics.CLIMB_BREAK_1);
-    private CANSparkMax sidewaysMover;
+    private final DoubleSolenoid lock = new DoubleSolenoid(kCANIDs.PNEUMATIC_HUB, PneumaticsModuleType.REVPH, kPneumatics.CLIMB_BREAK_2, kPneumatics.CLIMB_BREAK_1);
+    private final CANSparkMax sidewaysMover;
     public Climber() {
         innerArm = new ClimberArm(kCANIDs.INNER_ANGLE,kCANIDs.INNER_REACH, 
                     kClimb.climbAngleInner, kClimb.climbReachInner, false);

@@ -20,12 +20,12 @@ import frc.robot.constants.kCANIDs;
 
 public class Shooter extends SubsystemBase {
   /** Creates a new ExampleSubsystem. */
-  private CANSparkMax motorFront;
-  private RelativeEncoder encoderFront;
-  private SparkMaxPIDController pidFront;
-  private CANSparkMax motorBack;
-  private RelativeEncoder encoderBack;
-  private SparkMaxPIDController pidBack;
+  private final CANSparkMax motorFront;
+  private final RelativeEncoder encoderFront;
+  private final SparkMaxPIDController pidFront;
+  private final CANSparkMax motorBack;
+  private final RelativeEncoder encoderBack;
+  private final SparkMaxPIDController pidBack;
 
   private double setpointVelocityFront = 0;
   private double setpointVelocityBack = 0;

@@ -26,7 +26,7 @@ public class Robot extends TimedRobot {
 
     private static DataLog dataLog;
 
-    private SendableChooser<AutoUtil.Routine> autoChooser = new SendableChooser<>();
+    private final SendableChooser<AutoUtil.Routine> autoChooser = new SendableChooser<>();
 
     /**
      * This function is run when the robot is first started up and should be used for any

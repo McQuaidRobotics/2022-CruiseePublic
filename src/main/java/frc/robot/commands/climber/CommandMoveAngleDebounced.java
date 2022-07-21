@@ -12,12 +12,12 @@ import frc.robot.subsystems.climber.ClimberArm;
 
 public class CommandMoveAngleDebounced extends CommandBase {
   /** Creates a new CommandSetReach. */
-  private ClimberArm arm;
-  private double angle;
-  private double angleErrorMin;
-  private CurrentLimit useCurrentLimits;
+  private final ClimberArm arm;
+  private final double angle;
+  private final double angleErrorMin;
+  private final CurrentLimit useCurrentLimits;
   private boolean hold;
-  private double currentLimit;
+  private final double currentLimit;
   public CommandMoveAngleDebounced(ClimberArm arm, double angle, CurrentLimit useCurrentLimits, double angleErrorMin, double currentLimit){
     this.arm = arm;
     this.angle = angle;

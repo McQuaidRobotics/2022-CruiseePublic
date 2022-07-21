@@ -5,16 +5,15 @@
 package frc.robot.commands.climber;
 
 import com.ctre.phoenix.sensors.Pigeon2;
-
 import edu.wpi.first.wpilibj2.command.CommandBase;
 import frc.robot.constants.kClimb;
-import frc.robot.subsystems.drives.Drives;
 import frc.robot.subsystems.climber.ClimberArm;
+import frc.robot.subsystems.drives.Drives;
 
 public class CommandLevelArm extends CommandBase {
-  private Pigeon2 pigeonTwo;
-  private ClimberArm arm;
-  private Drives drives;
+  private final Pigeon2 pigeonTwo;
+  private final ClimberArm arm;
+  private final Drives drives;
   public CommandLevelArm(ClimberArm arm, Drives drives) {
     this.arm = arm;
     this.pigeonTwo = drives.getGyro();

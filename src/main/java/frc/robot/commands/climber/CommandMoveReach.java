@@ -11,10 +11,10 @@ import frc.robot.subsystems.climber.ClimberArm;
 
 public class CommandMoveReach extends CommandBase {
   /** Creates a new CommandSetReach. */
-  private ClimberArm arm;
-  private double position;
-  private boolean useCurrentLimits;
-  private double currentLimit;
+  private final ClimberArm arm;
+  private final double position;
+  private final boolean useCurrentLimits;
+  private final double currentLimit;
   boolean hold;
   public CommandMoveReach(ClimberArm arm, double position, boolean hold){
     this.arm = arm;

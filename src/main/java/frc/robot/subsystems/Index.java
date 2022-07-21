@@ -21,15 +21,15 @@ import frc.robot.constants.kDIO;
 
 
 public class Index extends SubsystemBase {
-  private CANSparkMax motor;
-  private RelativeEncoder encoder;
-  private SparkMaxPIDController pidController;
-  private DigitalInput beambreak;
+  private final CANSparkMax motor;
+  private final RelativeEncoder encoder;
+  private final SparkMaxPIDController pidController;
+  private final DigitalInput beambreak;
   private int ballsIndexed = 0;
 
-  private ShuffleboardTab tab = Shuffleboard.getTab("Index");
-  private DoubleLogEntry indexAmperageLog;
-  private DoubleLogEntry rotationNumberLog;
+  private final ShuffleboardTab tab = Shuffleboard.getTab("Index");
+  private final DoubleLogEntry indexAmperageLog;
+  private final DoubleLogEntry rotationNumberLog;
 
   public Index() {
     motor = new CANSparkMax(kCANIDs.IDX_MOTOR, MotorType.kBrushless);

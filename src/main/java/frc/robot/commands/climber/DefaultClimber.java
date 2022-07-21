@@ -13,8 +13,11 @@ import java.util.function.DoubleSupplier;
 
 public class DefaultClimber extends CommandBase {
     /** Creates a new DefaultClimber. */
-    private Climber climber;
-    private DoubleSupplier innerReach, innerAngle, outerReach, outerAngle;
+    private final Climber climber;
+    private final DoubleSupplier innerReach;
+    private final DoubleSupplier innerAngle;
+    private final DoubleSupplier outerReach;
+    private final DoubleSupplier outerAngle;
     private boolean isCoast;
     public DefaultClimber(Climber climber,
                             DoubleSupplier innerReach, DoubleSupplier innerAngle,

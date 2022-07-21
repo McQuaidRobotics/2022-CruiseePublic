@@ -20,13 +20,13 @@ import frc.robot.constants.kPneumatics;
 
 public class Acquisition extends SubsystemBase {
   private double setpointRPM = 0;
-  private CANSparkMax motor;
-  private RelativeEncoder encoder;
-  private SparkMaxPIDController pid;
-  private Solenoid arms = new Solenoid(kCANIDs.PNEUMATIC_HUB, PneumaticsModuleType.REVPH, kPneumatics.ACQ_ARMS);
+  private final CANSparkMax motor;
+  private final RelativeEncoder encoder;
+  private final SparkMaxPIDController pid;
+  private final Solenoid arms = new Solenoid(kCANIDs.PNEUMATIC_HUB, PneumaticsModuleType.REVPH, kPneumatics.ACQ_ARMS);
 
-  private ShuffleboardTab tab = Shuffleboard.getTab("Acquisition");
-  private DoubleLogEntry armsAmperageLog;
+  private final ShuffleboardTab tab = Shuffleboard.getTab("Acquisition");
+  private final DoubleLogEntry armsAmperageLog;
 
   public Acquisition() {
     motor = new CANSparkMax(kCANIDs.ACQ_MOTOR, MotorType.kBrushless);

@@ -20,18 +20,18 @@ import frc.robot.constants.kClimb.ClimberPid;
 
 /** Add your docs here. */
 public class ClimberArm {
-    private CANSparkMax angleMotor;
-    private CANSparkMax reachMotor;
+    private final CANSparkMax angleMotor;
+    private final CANSparkMax reachMotor;
     public RelativeEncoder angleEncoder;
     public RelativeEncoder reachEncoder;
-    private SparkMaxPIDController anglePidController;
-    private SparkMaxPIDController reachPidController;
-    private ClimberPid anglePid;
-    private ClimberPid reachPid;
+    private final SparkMaxPIDController anglePidController;
+    private final SparkMaxPIDController reachPidController;
+    private final ClimberPid anglePid;
+    private final ClimberPid reachPid;
     private double reachSetpoint = 0;
     private double angleSetpoint = 0;
-    private boolean isReversedReach;
-    private Debouncer debouncerAngle = new Debouncer(0.1, DebounceType.kBoth);
+    private final boolean isReversedReach;
+    private final Debouncer debouncerAngle = new Debouncer(0.1, DebounceType.kBoth);
     public ClimberArm(int angleId, int reachId, ClimberPid anglePID, ClimberPid reachPID, boolean isReversedReach){
         angleMotor = new CANSparkMax(angleId, MotorType.kBrushless);
         angleMotor.restoreFactoryDefaults();
