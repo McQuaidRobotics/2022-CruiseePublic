@@ -1,7 +1,6 @@
 package frc.robot.subsystems.drives;
 
 import com.ctre.phoenix.motorcontrol.ControlMode;
-import com.ctre.phoenix.motorcontrol.DemandType;
 import com.ctre.phoenix.motorcontrol.NeutralMode;
 import com.ctre.phoenix.motorcontrol.SupplyCurrentLimitConfiguration;
 import com.ctre.phoenix.motorcontrol.can.TalonFX;
@@ -43,16 +42,11 @@ public class SwerveModule {
         lastAngle = getState().angle.getDegrees();
     }
 
-    public void setDesiredState(SwerveModuleState desiredState, boolean isOpenLoop){
+    public void setDesiredState(SwerveModuleState desiredState){
         desiredState = SwerveUtil.optimize(desiredState, getState().angle); //Custom optimize command, since default WPILib optimize assumes continuous controller which CTRE is not
 
-        if(isOpenLoop){
-            double percentOutput = desiredState.speedMetersPerSecond / kSwerve.MAX_VELOCITY_METERS_PER_SECOND;
-            driveMotor.set(ControlMode.PercentOutput, percentOutput);
-        } else {
-            double velocity = UnitUtil.MPSToFalcon(desiredState.speedMetersPerSecond, kSwerve.WHEEL_CIRCUMFERENCE_METERS, kSwerve.DRIVE_GEAR_RATIO);
-            driveMotor.set(ControlMode.Velocity, velocity, DemandType.ArbitraryFeedForward, driveFeedforward.calculate(desiredState.speedMetersPerSecond));
-        }
+        double percentOutput = desiredState.speedMetersPerSecond / kSwerve.MAX_VELOCITY_METERS_PER_SECOND;
+        driveMotor.set(ControlMode.PercentOutput, percentOutput);
 
         double angle = (Math.abs(desiredState.speedMetersPerSecond) <= (kSwerve.MAX_VELOCITY_METERS_PER_SECOND * 0.01)) ? lastAngle : desiredState.angle.getDegrees(); //Prevent rotating module if speed is less then 1%. Prevents Jittering.
         angleMotor.set(ControlMode.Position, UnitUtil.degreesToFalcon(angle, kSwerve.ANGLE_GEAR_RATIO));

@@ -25,7 +25,6 @@ public class Acquisition extends SubsystemBase {
   private final SparkMaxPIDController pid;
   private final Solenoid arms = new Solenoid(kCANIDs.PNEUMATIC_HUB, PneumaticsModuleType.REVPH, kPneumatics.ACQ_ARMS);
 
-  private final ShuffleboardTab tab = Shuffleboard.getTab("Acquisition");
   private final DoubleLogEntry armsAmperageLog;
 
   public Acquisition() {
@@ -43,6 +42,7 @@ public class Acquisition extends SubsystemBase {
     pid.setIZone(0);
     pid.setOutputRange(-1,1);
 
+    ShuffleboardTab tab = Shuffleboard.getTab("Acquisition");
     tab.addBoolean("Arms Extended", this::areArmsExtended).withPosition(0, 0).withSize(1, 1);
     tab.addNumber("Actual RPM", this::getRollerRPM).withPosition(1, 1).withSize(1, 1);
     tab.addNumber("Setpoint RPM", this::getSetpointRPM).withPosition(1, 0).withSize(1, 1);
@@ -50,12 +50,15 @@ public class Acquisition extends SubsystemBase {
     DataLog log = Robot.getDataLog();
     armsAmperageLog = new DoubleLogEntry(log, "Acq/Roller-Amps");
   }
+
   public void extendArms(){
     arms.set(true);
   }
+
   public void retractArms(){
     arms.set(false);
   }
+
   public boolean areArmsExtended(){
     return arms.get();
   }
@@ -71,9 +74,11 @@ public class Acquisition extends SubsystemBase {
   public double getSetpointRPM(){
     return setpointRPM;
   }
+
   public void setRollerRPM(double setpoint) {
     this.setpointRPM = setpoint;
   }
+
   public double getRollerRPM(){
     return encoder.getVelocity();
   }

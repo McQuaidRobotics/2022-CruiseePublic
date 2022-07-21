@@ -27,7 +27,6 @@ public class Index extends SubsystemBase {
   private final DigitalInput beambreak;
   private int ballsIndexed = 0;
 
-  private final ShuffleboardTab tab = Shuffleboard.getTab("Index");
   private final DoubleLogEntry indexAmperageLog;
   private final DoubleLogEntry rotationNumberLog;
 
@@ -47,6 +46,7 @@ public class Index extends SubsystemBase {
 
     beambreak = new DigitalInput(kDIO.BEAMBREAK);
 
+    ShuffleboardTab tab = Shuffleboard.getTab("Index");
     tab.addNumber("Balls", this::getBallsIndexed).withPosition(0, 0).withSize(1, 1);
     tab.addBoolean("Beambreak", beambreak::get).withPosition(1, 0).withSize(1, 1);
 
@@ -82,10 +82,5 @@ public class Index extends SubsystemBase {
   }
   public void runPercentOut(double percent){
     motor.set(percent);
-  }
-
-  @Override
-  public void simulationPeriodic() {
-    // This method will be called once per scheduler run during simulation
   }
 }

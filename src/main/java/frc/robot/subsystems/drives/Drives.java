@@ -108,7 +108,7 @@ public class Drives extends SubsystemBase {
         SwerveDriveKinematics.desaturateWheelSpeeds(newStates, MAX_VELOCITY_METERS_PER_SECOND);
 
         for(SwerveModule module : modules) {
-            module.setDesiredState(newStates[module.moduleNumber], true); // Passing true for isOpenLoop because closed loop is not tuned
+            module.setDesiredState(newStates[module.moduleNumber]);
         }
     }
 

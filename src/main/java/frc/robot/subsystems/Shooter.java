@@ -30,7 +30,6 @@ public class Shooter extends SubsystemBase {
   private double setpointVelocityFront = 0;
   private double setpointVelocityBack = 0;
 
-  private final ShuffleboardTab tab = Shuffleboard.getTab("Shooter");
   private final DoubleLogEntry shooterFrontAmpsLog;
   private final DoubleLogEntry shooterBackAmpsLog;
 
@@ -65,6 +64,7 @@ public class Shooter extends SubsystemBase {
     pidBack.setIZone(0);
     pidBack.setOutputRange(-1,1);
 
+    ShuffleboardTab tab = Shuffleboard.getTab("Shooter");
     tab.addNumber("Setpoint RPM Front", () -> setpointVelocityFront).withPosition(0, 0).withSize(0, 0);
     tab.addNumber("Actual RPM Front", this::getVelocityFront).withPosition(1, 0).withSize(0, 0);
     tab.addNumber("Setpoint RPM Back", () -> setpointVelocityBack).withPosition(0, 1).withSize(0, 0);
@@ -83,6 +83,7 @@ public class Shooter extends SubsystemBase {
       motorFront.set(0);
     }
   }
+
   public void setVelocityBack(double setpoint) {
     setpointVelocityBack = setpoint;
     if(setpointVelocityBack != 0){
@@ -92,9 +93,11 @@ public class Shooter extends SubsystemBase {
       motorBack.set(0);
     }
   }
+
   public double getVelocityFront() {
     return encoderFront.getVelocity();
   }
+
   public double getVelocityBack() {
     return encoderBack.getVelocity();
   }
@@ -108,10 +111,6 @@ public class Shooter extends SubsystemBase {
   public void periodic() {
     shooterFrontAmpsLog.append(motorFront.getOutputCurrent());
     shooterBackAmpsLog.append(motorBack.getOutputCurrent());
-  }
-
-  @Override
-  public void simulationPeriodic() {
   }
 
   public static class ShooterRPMS{

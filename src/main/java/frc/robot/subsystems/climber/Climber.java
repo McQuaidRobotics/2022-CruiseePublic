@@ -16,11 +16,12 @@ import frc.robot.constants.kClimb;
 import frc.robot.constants.kPneumatics;
 
 public class Climber extends SubsystemBase {
-    /** Creates a new Climber. */
-    public ClimberArm outerArm;
-    public ClimberArm innerArm;
-    private final DoubleSolenoid lock = new DoubleSolenoid(kCANIDs.PNEUMATIC_HUB, PneumaticsModuleType.REVPH, kPneumatics.CLIMB_BREAK_2, kPneumatics.CLIMB_BREAK_1);
+    public ClimberArm outerArm, innerArm;
+
     private final CANSparkMax sidewaysMover;
+
+    private final DoubleSolenoid lock = new DoubleSolenoid(kCANIDs.PNEUMATIC_HUB, PneumaticsModuleType.REVPH, kPneumatics.CLIMB_BREAK_2, kPneumatics.CLIMB_BREAK_1);
+
     public Climber() {
         innerArm = new ClimberArm(kCANIDs.INNER_ANGLE,kCANIDs.INNER_REACH, 
                     kClimb.climbAngleInner, kClimb.climbReachInner, false);
@@ -29,28 +30,20 @@ public class Climber extends SubsystemBase {
         sidewaysMover = new CANSparkMax(kCANIDs.SIDEWAYS_MOVER, MotorType.kBrushless);
     }
 
-    public void extendArm(ClimberArm arm, double distance){
-        double rotations = distance/kClimb.CLIMB_ROTATION_TO_INCH;
-        SmartDashboard.putNumber("Climb Setpoint Reach", rotations);
-        arm.setReachSetpoint(rotations);
-    }  
-    public void rotateArmTo(ClimberArm arm, double angle){
-        double rotations = angle/kClimb.CLIMB_ROTATION_TO_DEGREE;
-        SmartDashboard.putNumber("Climb Setpoint Angle", rotations);
-        arm.setAngleSetpoint(rotations);
-    }  
     public void setToCoast(){
         outerArm.setAngleToCoast();
         innerArm.setAngleToCoast();
         outerArm.setReachToCoast();
         innerArm.setReachToCoast();
-    }  
+    }
+
     public void setToBrake(){
         outerArm.setAngleToBrake();
         innerArm.setAngleToBrake();
         outerArm.setReachToBrake();
         innerArm.setReachToBrake();
     }
+
     @Override
     public void periodic() {
         SmartDashboard.putNumber("Climb Encoder Out Reach", outerArm.reachEncoder.getPosition());
@@ -67,41 +60,30 @@ public class Climber extends SubsystemBase {
         innerArm.periodic();
     }
 
-    public void disableAngleSoftLimits(){
-        innerArm.disableAngleSoftLimits();
-        outerArm.disableAngleSoftLimits();
-    }
-    public void enableAngleSoftLimits(){
-        innerArm.enableAngleSoftLimits();
-        outerArm.enableAngleSoftLimits();
-    }
-    public void disableReachSoftLimits(){
-        innerArm.disableReachSoftLimits();
-        outerArm.disableReachSoftLimits();
-    }
-    public void enableReachSoftLimits(){
-        innerArm.enableReachSoftLimits();
-        outerArm.enableReachSoftLimits();
-    }
     public void zeroAngleEncoders(){
         innerArm.zeroAngleEncoders();
         outerArm.zeroAngleEncoders();
     }
+
     public void startInitialize(){
         innerArm.startInitialize();
         outerArm.startInitialize();
         releaseLock();
     }
+
     public void endInitialize(){
         innerArm.endInitialize();
         outerArm.endInitialize();
     }
+
     public void releaseLock(){
         lock.set(Value.kReverse);
     }
+
     public void extendBreak(){
         lock.set(Value.kForward);
     }
+
     public void moveSidewaysPOut(double percent){
         sidewaysMover.set(percent);
     }

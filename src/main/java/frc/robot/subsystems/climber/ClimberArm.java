@@ -8,7 +8,6 @@ import com.revrobotics.CANSparkMax;
 import com.revrobotics.CANSparkMax.ControlType;
 import com.revrobotics.CANSparkMax.IdleMode;
 import com.revrobotics.CANSparkMax.SoftLimitDirection;
-import com.revrobotics.CANSparkMaxLowLevel;
 import com.revrobotics.CANSparkMaxLowLevel.MotorType;
 import com.revrobotics.RelativeEncoder;
 import com.revrobotics.SparkMaxPIDController;
@@ -20,40 +19,33 @@ import frc.robot.constants.kClimb.ClimberPid;
 
 /** Add your docs here. */
 public class ClimberArm {
-    private final CANSparkMax angleMotor;
-    private final CANSparkMax reachMotor;
-    public RelativeEncoder angleEncoder;
-    public RelativeEncoder reachEncoder;
-    private final SparkMaxPIDController anglePidController;
-    private final SparkMaxPIDController reachPidController;
-    private final ClimberPid anglePid;
-    private final ClimberPid reachPid;
+    private final CANSparkMax angleMotor, reachMotor;
+
+    public RelativeEncoder angleEncoder, reachEncoder;
+
+    private final SparkMaxPIDController anglePidController, reachPidController;
+
+    private final ClimberPid anglePid, reachPid;
+
     private double reachSetpoint = 0;
     private double angleSetpoint = 0;
+
     private final boolean isReversedReach;
+
     private final Debouncer debouncerAngle = new Debouncer(0.1, DebounceType.kBoth);
+
     public ClimberArm(int angleId, int reachId, ClimberPid anglePID, ClimberPid reachPID, boolean isReversedReach){
         angleMotor = new CANSparkMax(angleId, MotorType.kBrushless);
         angleMotor.restoreFactoryDefaults();
         angleMotor.setInverted(false);
         angleMotor.setIdleMode(IdleMode.kBrake);
         angleMotor.setClosedLoopRampRate(2);
-        angleMotor.setPeriodicFramePeriod(CANSparkMaxLowLevel.PeriodicFrame.kStatus0, 1000);
-        angleMotor.setPeriodicFramePeriod(CANSparkMaxLowLevel.PeriodicFrame.kStatus1, 1000);
-        angleMotor.setPeriodicFramePeriod(CANSparkMaxLowLevel.PeriodicFrame.kStatus2, 20);
-        angleMotor.setPeriodicFramePeriod(CANSparkMaxLowLevel.PeriodicFrame.kStatus3, 1000);
-        angleMotor.setControlFramePeriodMs(20);
 
         reachMotor = new CANSparkMax(reachId, MotorType.kBrushless);
         reachMotor.restoreFactoryDefaults();
         reachMotor.setInverted(isReversedReach);
         reachMotor.setIdleMode(IdleMode.kBrake);
         reachMotor.setClosedLoopRampRate(0.25);
-        reachMotor.setPeriodicFramePeriod(CANSparkMaxLowLevel.PeriodicFrame.kStatus0, 1000);
-        reachMotor.setPeriodicFramePeriod(CANSparkMaxLowLevel.PeriodicFrame.kStatus1, 1000);
-        reachMotor.setPeriodicFramePeriod(CANSparkMaxLowLevel.PeriodicFrame.kStatus2, 20);
-        reachMotor.setPeriodicFramePeriod(CANSparkMaxLowLevel.PeriodicFrame.kStatus3, 1000);
-        reachMotor.setControlFramePeriodMs(20);
 
         angleEncoder = angleMotor.getEncoder();
         angleEncoder.setPosition(0);
@@ -68,6 +60,7 @@ public class ClimberArm {
 
         reachPid = reachPID;
         anglePid = anglePID;
+
         // Set limits for reach
         reachMotor.setSoftLimit(SoftLimitDirection.kReverse, (float)(kClimb.CLIMB_MIN_EXTEND/kClimb.CLIMB_ROTATION_TO_INCH));
         reachMotor.enableSoftLimit(SoftLimitDirection.kReverse, true);
@@ -91,75 +84,85 @@ public class ClimberArm {
         reachPidController.setReference(rotations, ControlType.kPosition);
         reachSetpoint = rotations;
     }
+
     public void setAngleSetpoint(double rotations){
         anglePidController.setReference(rotations, ControlType.kPosition);
         angleSetpoint = rotations;
     }
 
     public void periodic(){
-        // Stop when we are at a acceptable error
-        
-        // double angleError = Math.abs(angleSetpoint - angleEncoder.getPosition());
-        // if(angleError < kClimb.CLIMB_REACH_ALLOWED_ERROR){
-        //     angleSetpoint = angleEncoder.getPosition();
-        //     anglePidController.setReference(angleSetpoint, ControlType.kPosition);
-        // }
         SmartDashboard.putNumber("A-AngClm" + (isReversedReach?"O":"I"), angleMotor.getOutputCurrent());
         SmartDashboard.putNumber("A-RchClm" + (isReversedReach?"O":"I"), reachMotor.getOutputCurrent());
-
     }
+
     public void setAngleToCoast(){
         angleMotor.setIdleMode(IdleMode.kCoast);
     }
+
     public void setReachToCoast(){
         reachMotor.setIdleMode(IdleMode.kCoast);
     }
+
     public void setReachToBrake(){
         reachMotor.setIdleMode(IdleMode.kBrake);
     }
+
     public void setAngleToBrake(){
         angleMotor.setIdleMode(IdleMode.kBrake);
     }
+
     public double getReachSetpoint(){
         return reachSetpoint;
     }
+
     public void moveAnglePOut(double percent){
         angleMotor.set(percent);
     }
+
     public void moveReachPOut(double percent){
         reachMotor.set(percent);
     }
+
     public double getReachCurrent(){
         return reachMotor.getOutputCurrent();
     }
+
     public double getAngleCurrent(){
         return angleMotor.getOutputCurrent();
     }
+
     public double calculateReachError(){
         return Math.abs(reachSetpoint - reachEncoder.getPosition());
     }
+
     public double calculateAngleError(){
         return Math.abs(angleSetpoint - angleEncoder.getPosition());
     }
+
     public void disableAngleSoftLimits(){
         angleMotor.enableSoftLimit(SoftLimitDirection.kForward, false);
         angleMotor.enableSoftLimit(SoftLimitDirection.kReverse, false);
     }
+
     public void disableReachSoftLimits(){
         reachMotor.enableSoftLimit(SoftLimitDirection.kForward, false);
         reachMotor.enableSoftLimit(SoftLimitDirection.kReverse, false);
     }
+
     public void enableAngleSoftLimits(){
         angleMotor.enableSoftLimit(SoftLimitDirection.kForward, true);
         angleMotor.enableSoftLimit(SoftLimitDirection.kReverse, true);
     }
+
     public void enableReachSoftLimits(){
         reachMotor.enableSoftLimit(SoftLimitDirection.kForward, true);
         reachMotor.enableSoftLimit(SoftLimitDirection.kReverse, true);
     }
+
     public void zeroAngleEncoders(){    
         angleEncoder.setPosition(0);
     }
+
     public void zeroReachEncoders(){    
         reachEncoder.setPosition(0);    
     }
@@ -167,32 +170,40 @@ public class ClimberArm {
     public void startInitialize(){
         disableAngleSoftLimits();
         disableReachSoftLimits();
+
         anglePidController.setOutputRange(-0.5, 0.5);
         angleMotor.setClosedLoopRampRate(2);
         
         reachPidController.setOutputRange(-0.35, 0.35);
         reachMotor.setClosedLoopRampRate(0.25);
     }
+
     public void endInitialize(){
         zeroAngleEncoders();
         zeroReachEncoders();
+
         enableAngleSoftLimits();
         enableReachSoftLimits();
+
         anglePidController.setOutputRange(anglePid.min, anglePid.max);
         angleMotor.setClosedLoopRampRate(2);
         
         reachPidController.setOutputRange(reachPid.min, reachPid.max);
         reachMotor.setClosedLoopRampRate(0.25);
     }
+
     public void setAngleSmartLimit(int limit){
         angleMotor.setSmartCurrentLimit(limit);
     }
+
     public boolean debounceCurrentAngle(boolean isHigh){
         return debouncerAngle.calculate(isHigh);
     }
+
     public double getAngle(){
         return angleEncoder.getPosition()*kClimb.CLIMB_ROTATION_TO_DEGREE;
     }
+
     public void setReachOutput(double min, double max){
         reachPidController.setOutputRange(min, max);
     }
