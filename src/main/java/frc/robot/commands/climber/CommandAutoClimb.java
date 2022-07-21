@@ -24,7 +24,7 @@ public class CommandAutoClimb extends SequentialCommandGroup {
   public CommandAutoClimb(Climber climber, Drives drives, Index index, XboxController gamepad) {
     addRequirements(climber, index);
     addCommands(
-      new InstantCommand(() -> climber.releaseLock()),
+      new InstantCommand(climber::releaseLock),
       new ParallelCommandGroup(
         new CommandMoveAngle(climber.innerArm, -26, CurrentLimitType.OFF, kClimb.CLIMB_ANGLE_ALLOWED_ERROR_GENERAL),
         new CommandMoveReach(climber.outerArm, kClimb.CLIMB_MAX_EXTEND-2, true)
