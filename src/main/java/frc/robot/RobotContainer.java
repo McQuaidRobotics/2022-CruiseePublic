@@ -4,7 +4,10 @@
 
 package frc.robot;
 
-import edu.wpi.first.wpilibj.*;
+import edu.wpi.first.wpilibj.GenericHID;
+import edu.wpi.first.wpilibj.PneumaticHub;
+import edu.wpi.first.wpilibj.PowerDistribution;
+import edu.wpi.first.wpilibj.XboxController;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.SequentialCommandGroup;
 import edu.wpi.first.wpilibj2.command.WaitCommand;
@@ -34,17 +37,16 @@ import frc.robot.utils.ControllerRumble;
 public class RobotContainer {
     public final PowerDistribution pdp = new PowerDistribution(kCANIDs.PDP, PowerDistribution.ModuleType.kRev);
     public final PneumaticHub pneumaticHub = new PneumaticHub(kCANIDs.PNEUMATIC_HUB);
-    public final Compressor compressor = new Compressor(kCANIDs.PNEUMATIC_HUB, PneumaticsModuleType.REVPH);
 
     private final XboxController driverController = new XboxController(0);
     private final XboxController operatorController = new XboxController(1);
-    private final Drives drives = new Drives();
 
     private ControllerRumble driverControllerLeftRumble = new ControllerRumble(0, 0);
     private ControllerRumble driverControllerRightRumble = new ControllerRumble(0, 0);
     private ControllerRumble operatorControllerLeftRumble = new ControllerRumble(0, 0);
     private ControllerRumble operatorControllerRightRumble = new ControllerRumble(0, 0);
 
+    private final Drives drives = new Drives();
     private final Acquisition acquisition = new Acquisition();
     private final Shooter shooter = new Shooter();
     private final Index index = new Index();
@@ -52,11 +54,6 @@ public class RobotContainer {
     private final LED led = new LED();
 
     public RobotContainer() {
-        // Set up the default command for the drivetrain.
-        // The controls are for field-oriented driving:
-        // Left stick Y axis -> forward and backwards movement
-        // Left stick X axis -> left and right movement
-        // Right stick X axis -> rotation
         drives.setDefaultCommand(new DefaultDriveCommand(
                 drives,
                         () -> -modifyAxis(driverController.getLeftY()) * kSwerve.MAX_VELOCITY_METERS_PER_SECOND * (1 - (modifyAxis(driverController.getLeftTriggerAxis()) * 0.9)),
@@ -74,19 +71,11 @@ public class RobotContainer {
                 () -> 0 * operatorController.getLeftX() * 0.4 // CURRENTLY DISABLED
         ));
 
-        // Configure the button bindings
         configureDriverControllerBindings();
         configureOperatorControllerBindings();
     }
 
-    /**
-     * Use this method to define your button->command mappings. Buttons can be created by
-     * instantiating a {@link GenericHID} or one of its subclasses ({@link
-     * edu.wpi.first.wpilibj.Joystick} or {@link XboxController}), and then passing it to a {@link
-     * edu.wpi.first.wpilibj2.command.button.JoystickButton}.
-     */
     private void configureDriverControllerBindings() {
-        // Back button zeros the gyroscope
         new Button(driverController::getBackButton)
                         .whenPressed(drives::zeroGyroscope);
         // new Button(driverController::getStartButton);
@@ -128,10 +117,9 @@ public class RobotContainer {
     private void configureOperatorControllerBindings() {
         // Start/Back
         new Button(operatorController::getStartButton)
-                //.whenPressed(new ComplexInitializeClimb(climber));
-                .whenPressed(() -> {climber.releaseLock();});
+                .whenPressed(climber::releaseLock);
         new Button(operatorController::getBackButton)
-                .whenPressed(() -> {climber.extendBreak();});
+                .whenPressed(climber::extendBreak);
 
         // Colored buttons
         new Button(operatorController::getAButton)
