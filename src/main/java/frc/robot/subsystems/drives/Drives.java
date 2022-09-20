@@ -6,6 +6,7 @@ package frc.robot.subsystems.drives;
 
 import com.ctre.phoenix.sensors.Pigeon2;
 import com.ctre.phoenix.sensors.WPI_Pigeon2;
+
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Translation2d;
@@ -25,7 +26,14 @@ import frc.robot.Robot;
 import frc.robot.constants.kCANIDs;
 import frc.robot.constants.kSwerve;
 
-import static frc.robot.constants.kSwerve.*;
+import static frc.robot.constants.kSwerve.CANIVORE_NAME;
+import static frc.robot.constants.kSwerve.DRIVETRAIN_TRACKWIDTH_METERS;
+import static frc.robot.constants.kSwerve.DRIVETRAIN_WHEELBASE_METERS;
+import static frc.robot.constants.kSwerve.FRONT_LEFT_MODULE_STEER_OFFSET;
+import static frc.robot.constants.kSwerve.FRONT_RIGHT_MODULE_STEER_OFFSET;
+import static frc.robot.constants.kSwerve.MAX_VELOCITY_METERS_PER_SECOND;
+import static frc.robot.constants.kSwerve.REAR_LEFT_MODULE_STEER_OFFSET;
+import static frc.robot.constants.kSwerve.REAR_RIGHT_MODULE_STEER_OFFSET;
 
 public class Drives extends SubsystemBase {
     private boolean runDrive = true;
@@ -47,6 +55,7 @@ public class Drives extends SubsystemBase {
     private final SwerveDriveOdometry odometry;
     private final Field2d field = new Field2d();
 
+    private double lastPigeonRotation;
     private final DoubleLogEntry pigeonLog;
 
     public Drives() {
@@ -138,7 +147,8 @@ public class Drives extends SubsystemBase {
 
     @Override
     public void periodic() {
-        pigeonLog.append(pigeonTwo.getRotation2d().getDegrees());
+        if(pigeonTwo.getRotation2d().getDegrees() != lastPigeonRotation) pigeonLog.append(pigeonTwo.getRotation2d().getDegrees());
+        lastPigeonRotation = pigeonTwo.getRotation2d().getDegrees();
 
         odometry.update(pigeonTwo.getRotation2d(), getRealStates());
         field.setRobotPose(getPose());

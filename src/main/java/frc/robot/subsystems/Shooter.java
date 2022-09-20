@@ -9,6 +9,7 @@ import com.revrobotics.CANSparkMax.IdleMode;
 import com.revrobotics.CANSparkMaxLowLevel.MotorType;
 import com.revrobotics.RelativeEncoder;
 import com.revrobotics.SparkMaxPIDController;
+
 import edu.wpi.first.util.datalog.DataLog;
 import edu.wpi.first.util.datalog.DoubleLogEntry;
 import edu.wpi.first.wpilibj.shuffleboard.Shuffleboard;
@@ -30,7 +31,9 @@ public class Shooter extends SubsystemBase {
   private double setpointVelocityFront = 0;
   private double setpointVelocityBack = 0;
 
+  private double lastFrontAmps = 0;
   private final DoubleLogEntry shooterFrontAmpsLog;
+  private double lastBackAmps;
   private final DoubleLogEntry shooterBackAmpsLog;
 
   public Shooter() {
@@ -109,8 +112,10 @@ public class Shooter extends SubsystemBase {
 
   @Override
   public void periodic() {
-    shooterFrontAmpsLog.append(motorFront.getOutputCurrent());
-    shooterBackAmpsLog.append(motorBack.getOutputCurrent());
+    if(motorFront.getOutputCurrent() != lastFrontAmps) shooterFrontAmpsLog.append(motorFront.getOutputCurrent());
+    lastFrontAmps = motorFront.getOutputCurrent();
+    if(motorBack.getOutputCurrent() != lastBackAmps) shooterBackAmpsLog.append(motorBack.getOutputCurrent());
+    lastBackAmps = motorBack.getOutputCurrent();
   }
 
   public static class ShooterRPMS{

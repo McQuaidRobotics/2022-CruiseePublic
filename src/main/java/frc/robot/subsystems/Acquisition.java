@@ -6,6 +6,7 @@ import com.revrobotics.CANSparkMax.IdleMode;
 import com.revrobotics.CANSparkMaxLowLevel.MotorType;
 import com.revrobotics.RelativeEncoder;
 import com.revrobotics.SparkMaxPIDController;
+
 import edu.wpi.first.util.datalog.DataLog;
 import edu.wpi.first.util.datalog.DoubleLogEntry;
 import edu.wpi.first.wpilibj.PneumaticsModuleType;
@@ -25,6 +26,7 @@ public class Acquisition extends SubsystemBase {
   private final SparkMaxPIDController pid;
   private final Solenoid arms = new Solenoid(kCANIDs.PNEUMATIC_HUB, PneumaticsModuleType.REVPH, kPneumatics.ACQ_ARMS);
 
+  private double lastArmsAmperage;
   private final DoubleLogEntry armsAmperageLog;
 
   public Acquisition() {
@@ -85,7 +87,8 @@ public class Acquisition extends SubsystemBase {
 
   @Override
   public void periodic() {
-    armsAmperageLog.append(motor.getOutputCurrent());
+    if(motor.getOutputCurrent() != lastArmsAmperage) armsAmperageLog.append(motor.getOutputCurrent());
+    lastArmsAmperage = motor.getOutputCurrent();
   }
 
   @Override

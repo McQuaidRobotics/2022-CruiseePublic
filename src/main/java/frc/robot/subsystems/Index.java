@@ -9,6 +9,7 @@ import com.revrobotics.CANSparkMax.IdleMode;
 import com.revrobotics.CANSparkMaxLowLevel.MotorType;
 import com.revrobotics.RelativeEncoder;
 import com.revrobotics.SparkMaxPIDController;
+
 import edu.wpi.first.util.datalog.DataLog;
 import edu.wpi.first.util.datalog.DoubleLogEntry;
 import edu.wpi.first.wpilibj.DigitalInput;
@@ -27,7 +28,9 @@ public class Index extends SubsystemBase {
   private final DigitalInput beambreak;
   private int ballsIndexed = 0;
 
+  private double lastIndexAmps;
   private final DoubleLogEntry indexAmperageLog;
+  private double lastRotationNumber;
   private final DoubleLogEntry rotationNumberLog;
 
   public Index() {
@@ -57,8 +60,10 @@ public class Index extends SubsystemBase {
 
   @Override
   public void periodic() {
-    indexAmperageLog.append(motor.getOutputCurrent());
-    rotationNumberLog.append(getIndexPosition());
+    if(motor.getOutputCurrent() != lastIndexAmps) indexAmperageLog.append(motor.getOutputCurrent());
+    lastIndexAmps = motor.getOutputCurrent();
+    if(getIndexPosition() != lastRotationNumber) rotationNumberLog.append(getIndexPosition());
+    lastRotationNumber = getIndexPosition();
   }
 
   public boolean isBallBlockingBeam(){

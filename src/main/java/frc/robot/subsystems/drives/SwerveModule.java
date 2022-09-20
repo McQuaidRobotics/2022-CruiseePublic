@@ -5,8 +5,12 @@ import com.ctre.phoenix.motorcontrol.NeutralMode;
 import com.ctre.phoenix.motorcontrol.SupplyCurrentLimitConfiguration;
 import com.ctre.phoenix.motorcontrol.can.TalonFX;
 import com.ctre.phoenix.motorcontrol.can.TalonFXConfiguration;
-import com.ctre.phoenix.sensors.*;
-import edu.wpi.first.math.controller.SimpleMotorFeedforward;
+import com.ctre.phoenix.sensors.AbsoluteSensorRange;
+import com.ctre.phoenix.sensors.CANCoder;
+import com.ctre.phoenix.sensors.CANCoderConfiguration;
+import com.ctre.phoenix.sensors.SensorInitializationStrategy;
+import com.ctre.phoenix.sensors.SensorTimeBase;
+
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.kinematics.SwerveModuleState;
 import frc.robot.constants.kSwerve;
@@ -21,7 +25,6 @@ public class SwerveModule {
     private final CANCoder angleEncoder;
     private double lastAngle;
 
-    private final SimpleMotorFeedforward driveFeedforward = new SimpleMotorFeedforward(kSwerve.DRIVE_MOTOR_KS, kSwerve.DRIVE_MOTOR_KV, kSwerve.DRIVE_MOTOR_KA);
 
     public SwerveModule(int moduleNumber, String canbus, int driveMotorID, int angleMotorID, int cancoderID, double angleOffset){
         this.moduleNumber = moduleNumber;
