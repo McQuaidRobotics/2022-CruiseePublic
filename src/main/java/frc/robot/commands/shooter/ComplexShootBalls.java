@@ -19,11 +19,10 @@ import frc.robot.subsystems.Shooter.ShooterRPMS;
 public class ComplexShootBalls extends SequentialCommandGroup {
   public ComplexShootBalls(Shooter shooter, Index index, Acquisition acquisition, int balls, ShooterRPMS rpms) {
     addCommands(
-      new InstantCommand(() -> acquisition.extendArms()),
+      new InstantCommand(acquisition::extendArms),
       new InstantCommand(() -> acquisition.setRollerRPM(0)),
       new CommandRunShooter(shooter, rpms),
       new CommandMoveIndex(index, balls * kControl.INDEX_ONE_BALL_ROTATIONS),
-      new InstantCommand(() -> index.setBallsIndexed(Math.max(0, index.getBallsIndexed() - balls))),
       new InstantCommand(() -> shooter.setPercentOut(0)),
       new InstantCommand(() -> index.runPercentOut(0)),
       new InstantCommand(() -> acquisition.setRollerRPM(kControl.ACQUISITION_RPMS))

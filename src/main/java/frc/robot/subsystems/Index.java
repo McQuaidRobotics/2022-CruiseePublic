@@ -4,6 +4,7 @@
 
 package frc.robot.subsystems;
 
+import com.fasterxml.jackson.annotation.ObjectIdGenerators.None;
 import com.revrobotics.CANSparkMax;
 import com.revrobotics.CANSparkMax.IdleMode;
 import com.revrobotics.CANSparkMaxLowLevel.MotorType;
@@ -25,11 +26,11 @@ public class Index extends SubsystemBase {
   private final RelativeEncoder encoder;
   private final SparkMaxPIDController pidController;
   private final DigitalInput beambreak;
-  private int ballsIndexed = 0;
 
   private final DoubleLogEntry indexAmperageLog;
   private final DoubleLogEntry rotationNumberLog;
-
+  private IndexState indexState;
+  
   public Index() {
     motor = new CANSparkMax(kCANIDs.IDX_MOTOR, MotorType.kBrushless);
     motor.restoreFactoryDefaults();
@@ -70,17 +71,97 @@ public class Index extends SubsystemBase {
   }
 
   public int getBallsIndexed(){
-    return ballsIndexed;
+    return indexState.getNumber();
+  }
+  public BallState getState(){
+    return indexState.getState();
+  }
+  public BallState getDesiredState(){
+    return indexState.getDesiredState();
   }
 
-  public void setBallsIndexed(int balls){
-    ballsIndexed = balls;
-  }
 
   public void runClosedLoopPosition(double rotations){
     pidController.setReference(rotations, CANSparkMax.ControlType.kPosition);
   }
   public void runPercentOut(double percent){
     motor.set(percent);
+  }
+
+  public void update(boolean newDetected){
+    indexState.update(newDetected);
+  }
+
+  public void removeBall(){
+    indexState.removeBall();;
+  }
+
+  public enum BallState{
+    NONE,
+    TOP,
+    BOTTOM,
+    BOTH
+  }
+
+  public static class IndexState{
+    public BallState ballState;  
+    boolean prevDetected = false;
+    boolean currDetected = true;
+
+    public IndexState(BallState startingState){
+      this.ballState = startingState;
+    }
+
+    public void update(boolean newDetected){
+      prevDetected = currDetected;
+      currDetected = newDetected;
+
+      if(!prevDetected && currDetected){
+        if(ballState == BallState.NONE){
+          ballState = BallState.BOTTOM;
+        }
+        if(ballState == BallState.TOP){
+          ballState = BallState.BOTH;
+        }
+      }
+      if(prevDetected && !currDetected && ballState == BallState.BOTTOM){
+        ballState = BallState.TOP;
+      }
+    }
+    public void setState(BallState state){
+      this.ballState = state;
+    }
+    public BallState getState(){
+      return ballState;
+    }
+    public BallState getDesiredState(){
+      if(ballState == BallState.BOTTOM){
+        return BallState.TOP;
+      }
+      return ballState;
+    }
+    public int getNumber(){
+      switch(ballState){
+        case BOTTOM:
+        case TOP:
+          return 1;
+        case BOTH:
+          return 2;
+        default:
+          case NONE:
+          return 0;
+      }
+    }
+    public void removeBall(){
+      if(ballState == BallState.BOTH){
+        ballState = BallState.TOP;
+      }
+      if(ballState == BallState.TOP){
+        ballState = BallState.NONE;
+      }
+      if(ballState == BallState.BOTTOM){
+        ballState = BallState.TOP;
+      }
+    }
   }
 }
