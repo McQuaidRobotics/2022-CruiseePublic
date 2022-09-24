@@ -15,10 +15,11 @@ import frc.robot.subsystems.Index.BallState;
 public class DefaultIndex extends CommandBase {
   @SuppressWarnings({"PMD.UnusedPrivateField", "PMD.SingularField"})
   private final Index index;
-  private final double minIndexIncrement = 10;
+  private final double minIndexIncrement = 5;
   private boolean shiftingBall = false;
   private double startingPosition;  
   private double wantedPosition;
+  private double offset = 0;
   public DefaultIndex(Index index) {
     this.index = index;
     // Use addRequirements() here to declare subsystem dependencies.
@@ -36,14 +37,20 @@ public class DefaultIndex extends CommandBase {
   public void execute() {
     index.update(index.isBallBlockingBeam());
     if(index.getState() == BallState.NONE){
-      startingPosition = index.getIndexPosition()+1; // always be moving one position, keeps balls from getting stuck
+      index.runPercentOut(0.1);
+      startingPosition = index.getIndexPosition(); // always be moving one position, keeps balls from getting stuck
       wantedPosition = startingPosition;
+      offset = 0;
+      
     }
-    if(index.getDesiredState() == BallState.TOP){
+    if(index.getDesiredState() == BallState.TOP && index.wantsDifferentState()){
       // Shift the indexer
-      wantedPosition = startingPosition+kControl.INDEX_ONE_BALL_ROTATIONS;
+      wantedPosition = startingPosition + offset;
+      index.runClosedLoopPosition(wantedPosition);
+      if(Math.abs(wantedPosition-index.getIndexPosition()) < kControl.INDEX_ALLOWED_ERROR_ROTATIONS){
+        offset+=minIndexIncrement; // Needs to be enough that it will moveS
+      }
     }
-    index.runClosedLoopPosition(wantedPosition);
   }
   
   // Called once the command ends or is interrupted.

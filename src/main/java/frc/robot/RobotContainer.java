@@ -56,12 +56,12 @@ public class RobotContainer {
     public RobotContainer() {
         drives.setDefaultCommand(new DefaultDriveCommand(
                 drives,
-                        () -> -modifyAxis(driverController.getLeftY()) * kSwerve.MAX_VELOCITY_METERS_PER_SECOND * (1 - (modifyAxis(driverController.getLeftTriggerAxis()) * 0.9)),
-                        () -> -modifyAxis(driverController.getLeftX()) * kSwerve.MAX_VELOCITY_METERS_PER_SECOND * (1 - (modifyAxis(driverController.getLeftTriggerAxis()) * 0.9)),
-                        () -> -modifyAxis(driverController.getRightX()) * kSwerve.MAX_ANGULAR_VELOCITY_RADIANS_PER_SECOND * (1 - (modifyAxis(driverController.getLeftTriggerAxis()) * 0.9))
+                        () -> -modifyAxis(driverController.getLeftY()) * kSwerve.MAX_VELOCITY_METERS_PER_SECOND * (1 - (modifyAxis(driverController.getLeftTriggerAxis()) * 0.5)),
+                        () -> -modifyAxis(driverController.getLeftX()) * kSwerve.MAX_VELOCITY_METERS_PER_SECOND * (1 - (modifyAxis(driverController.getLeftTriggerAxis()) * 0.5)),
+                        () -> -modifyAxis(driverController.getRightX()) * kSwerve.MAX_ANGULAR_VELOCITY_RADIANS_PER_SECOND * (1 - (modifyAxis(driverController.getLeftTriggerAxis()) * 0.5))
         ));
 
-        acquisition.setDefaultCommand(new DefaultAcquisition(acquisition));
+        acquisition.setDefaultCommand(new DefaultAcquisition(acquisition, this::shouldAcquisitionRun));
         index.setDefaultCommand(new DefaultIndex(index));
 
         climber.setDefaultCommand(new DefaultClimber(climber,
@@ -251,5 +251,9 @@ public class RobotContainer {
     public void setOperatorControllerRumble(GenericHID.RumbleType side, double amplitude, double seconds) {
         if(side == GenericHID.RumbleType.kLeftRumble) operatorControllerLeftRumble = new ControllerRumble(amplitude, seconds);
         else operatorControllerRightRumble = new ControllerRumble(amplitude, seconds);
+    }
+
+    public boolean shouldAcquisitionRun(){
+        return index.getBallsIndexed() != 2; // Make sure we are not running acquisition on a stationary ball
     }
 }

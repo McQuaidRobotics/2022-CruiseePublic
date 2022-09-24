@@ -15,6 +15,7 @@ import edu.wpi.first.util.datalog.DoubleLogEntry;
 import edu.wpi.first.wpilibj.DigitalInput;
 import edu.wpi.first.wpilibj.shuffleboard.Shuffleboard;
 import edu.wpi.first.wpilibj.shuffleboard.ShuffleboardTab;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Robot;
 import frc.robot.constants.kCANIDs;
@@ -54,12 +55,15 @@ public class Index extends SubsystemBase {
     DataLog log = Robot.getDataLog();
     indexAmperageLog = new DoubleLogEntry(log, "Idx/Index-Amps");
     rotationNumberLog = new DoubleLogEntry(log, "Idx/Rotations");
+    indexState = new IndexState(BallState.NONE);
   }
 
   @Override
   public void periodic() {
     indexAmperageLog.append(motor.getOutputCurrent());
     rotationNumberLog.append(getIndexPosition());
+    SmartDashboard.putNumber("Balls indexed", getBallsIndexed());
+    SmartDashboard.putNumber("Index Position", getIndexPosition());
   }
 
   public boolean isBallBlockingBeam(){
@@ -78,6 +82,9 @@ public class Index extends SubsystemBase {
   }
   public BallState getDesiredState(){
     return indexState.getDesiredState();
+  }
+  public boolean wantsDifferentState(){
+    return getDesiredState() != getState();
   }
 
 
