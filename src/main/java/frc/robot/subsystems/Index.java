@@ -15,6 +15,7 @@ import edu.wpi.first.util.datalog.DoubleLogEntry;
 import edu.wpi.first.wpilibj.DigitalInput;
 import edu.wpi.first.wpilibj.shuffleboard.Shuffleboard;
 import edu.wpi.first.wpilibj.shuffleboard.ShuffleboardTab;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Robot;
 import frc.robot.constants.kCANIDs;
@@ -26,12 +27,12 @@ public class Index extends SubsystemBase {
   private final RelativeEncoder encoder;
   private final SparkMaxPIDController pidController;
   private final DigitalInput beambreak;
-  private int ballsIndexed = 0;
 
   private double lastIndexAmps;
   private final DoubleLogEntry indexAmperageLog;
   private double lastRotationNumber;
   private final DoubleLogEntry rotationNumberLog;
+  private IndexState indexState;
 
   public Index() {
     motor = new CANSparkMax(kCANIDs.IDX_MOTOR, MotorType.kBrushless);
@@ -56,6 +57,7 @@ public class Index extends SubsystemBase {
     DataLog log = Robot.getDataLog();
     indexAmperageLog = new DoubleLogEntry(log, "Idx/Index-Amps");
     rotationNumberLog = new DoubleLogEntry(log, "Idx/Rotations");
+    indexState = new IndexState(BallState.NONE);
   }
 
   @Override
@@ -64,6 +66,7 @@ public class Index extends SubsystemBase {
     lastIndexAmps = motor.getOutputCurrent();
     if(getIndexPosition() != lastRotationNumber) rotationNumberLog.append(getIndexPosition());
     lastRotationNumber = getIndexPosition();
+    SmartDashboard.putNumber("Index Position", getIndexPosition());
   }
 
   public boolean isBallBlockingBeam(){
@@ -75,17 +78,100 @@ public class Index extends SubsystemBase {
   }
 
   public int getBallsIndexed(){
-    return ballsIndexed;
+    return indexState.getNumber();
+  }
+  public BallState getState(){
+    return indexState.getState();
+  }
+  public BallState getDesiredState(){
+    return indexState.getDesiredState();
+  }
+  public boolean wantsDifferentState(){
+    return getDesiredState() != getState();
   }
 
-  public void setBallsIndexed(int balls){
-    ballsIndexed = balls;
-  }
 
   public void runClosedLoopPosition(double rotations){
     pidController.setReference(rotations, CANSparkMax.ControlType.kPosition);
   }
   public void runPercentOut(double percent){
     motor.set(percent);
+  }
+
+  public void update(boolean newDetected){
+    indexState.update(newDetected);
+  }
+
+  public void removeBall(){
+    indexState.removeBall();;
+  }
+
+  public enum BallState{
+    NONE,
+    TOP,
+    BOTTOM,
+    BOTH
+  }
+
+  public static class IndexState{
+    public BallState ballState;
+    boolean prevDetected = false;
+    boolean currDetected = true;
+
+    public IndexState(BallState startingState){
+      this.ballState = startingState;
+    }
+
+    public void update(boolean newDetected){
+      prevDetected = currDetected;
+      currDetected = newDetected;
+
+      if(!prevDetected && currDetected){
+        if(ballState == BallState.NONE){
+          ballState = BallState.BOTTOM;
+        }
+        if(ballState == BallState.TOP){
+          ballState = BallState.BOTH;
+        }
+      }
+      if(prevDetected && !currDetected && ballState == BallState.BOTTOM){
+        ballState = BallState.TOP;
+      }
+    }
+    public void setState(BallState state){
+      this.ballState = state;
+    }
+    public BallState getState(){
+      return ballState;
+    }
+    public BallState getDesiredState(){
+      if(ballState == BallState.BOTTOM){
+        return BallState.TOP;
+      }
+      return ballState;
+    }
+    public int getNumber(){
+      switch(ballState){
+        case BOTTOM:
+        case TOP:
+          return 1;
+        case BOTH:
+          return 2;
+        default:
+          case NONE:
+          return 0;
+      }
+    }
+    public void removeBall(){
+      if(ballState == BallState.BOTH){
+        ballState = BallState.TOP;
+      }
+      if(ballState == BallState.TOP){
+        ballState = BallState.NONE;
+      }
+      if(ballState == BallState.BOTTOM){
+        ballState = BallState.TOP;
+      }
+    }
   }
 }

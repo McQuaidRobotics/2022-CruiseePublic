@@ -91,3 +91,7 @@ repositories {
        url 'https://jitpack.io'
   }
 }
+
+test{
+    useJUnit()
+}

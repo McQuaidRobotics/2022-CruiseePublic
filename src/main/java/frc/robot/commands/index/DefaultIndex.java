@@ -6,18 +6,20 @@ package frc.robot.commands.index;
 
 import edu.wpi.first.wpilibj2.command.CommandBase;
 import frc.robot.Robot;
+import frc.robot.constants.kControl;
 import frc.robot.constants.kLED;
 import frc.robot.subsystems.Index;
+import frc.robot.subsystems.Index.BallState;
 
 /** An example command that uses an example subsystem. */
 public class DefaultIndex extends CommandBase {
   @SuppressWarnings({"PMD.UnusedPrivateField", "PMD.SingularField"})
   private final Index index;
-  private final double minIndexIncrement = 10;
-  private boolean ballWasBreakingSensor;
+  private final double minIndexIncrement = 5;
   private boolean shiftingBall = false;
-  
-  
+  private double startingPosition;  
+  private double wantedPosition;
+  private double offset = 0;
   public DefaultIndex(Index index) {
     this.index = index;
     // Use addRequirements() here to declare subsystem dependencies.
@@ -27,49 +29,28 @@ public class DefaultIndex extends CommandBase {
   // Called when the command is initially scheduled.
   @Override
   public void initialize() {
-    //🤔
-    ballWasBreakingSensor = index.isBallBlockingBeam();
+    startingPosition = index.getIndexPosition();
+    wantedPosition = startingPosition;
   }
-
   // Called every time the scheduler runs while the command is scheduled.
   @Override
   public void execute() {
-    boolean ballIsBreakingSensor = index.isBallBlockingBeam();
-    int ballsIndexed = index.getBallsIndexed();
-    if(ballsIndexed == 0){
+    index.update(index.isBallBlockingBeam());
+    if(index.getState() == BallState.NONE){
       index.runPercentOut(0.1);
-    } else {
-      index.runPercentOut(0);
+      startingPosition = index.getIndexPosition(); // always be moving one position, keeps balls from getting stuck
+      wantedPosition = startingPosition;
+      offset = 0;
+      
     }
-
-    if(ballWasBreakingSensor && !ballIsBreakingSensor){
-      shiftingBall = false;
-    }
-
-    if(!ballWasBreakingSensor && ballIsBreakingSensor  && ballsIndexed == 1){
-      index.setBallsIndexed(ballsIndexed+1);
-
-      switch(index.getBallsIndexed()) {
-        case 0:
-          Robot.setLED(kLED.BALLS_INDEXED_ZERO);
-          break;
-        case 1:
-          Robot.setLED(kLED.BALLS_INDEXED_ONE);
-          break;
-        case 2:
-          Robot.setLED(kLED.BALLS_INDEXED_TWO);
+    if(index.getDesiredState() == BallState.TOP && index.wantsDifferentState()){
+      // Shift the indexer
+      wantedPosition = startingPosition + offset;
+      index.runClosedLoopPosition(wantedPosition);
+      if(Math.abs(wantedPosition-index.getIndexPosition()) < kControl.INDEX_ALLOWED_ERROR_ROTATIONS){
+        offset+=minIndexIncrement; // Needs to be enough that it will moveS
       }
     }
-
-    if(ballIsBreakingSensor && ballsIndexed == 0){
-      index.setBallsIndexed(ballsIndexed+1);
-      shiftingBall = true;
-    }
-
-    if(shiftingBall){
-      index.runClosedLoopPosition(index.getIndexPosition() + minIndexIncrement);  
-    }
-    ballWasBreakingSensor = ballIsBreakingSensor;
   }
   
   // Called once the command ends or is interrupted.

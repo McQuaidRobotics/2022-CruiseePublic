@@ -32,7 +32,7 @@ public class CommandMoveIndex extends CommandBase {
 
   @Override
   public void end(boolean interrupted) {
-    index.setBallsIndexed(Math.max(0, index.getBallsIndexed()-balls));
+    index.removeBall();
   }
 
   @Override
