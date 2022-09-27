@@ -30,8 +30,6 @@ public class Index extends SubsystemBase {
 
   private double lastIndexAmps;
   private final DoubleLogEntry indexAmperageLog;
-  private double lastRotationNumber;
-  private final DoubleLogEntry rotationNumberLog;
   private IndexState indexState;
 
   public Index() {
@@ -53,10 +51,10 @@ public class Index extends SubsystemBase {
     ShuffleboardTab tab = Shuffleboard.getTab("Index");
     tab.addNumber("Balls", this::getBallsIndexed).withPosition(0, 0).withSize(1, 1);
     tab.addBoolean("Beambreak", beambreak::get).withPosition(1, 0).withSize(1, 1);
+    tab.addNumber("Index Position", this::getIndexPosition).withPosition(2, 0).withSize(1, 1);
 
     DataLog log = Robot.getDataLog();
     indexAmperageLog = new DoubleLogEntry(log, "Idx/Index-Amps");
-    rotationNumberLog = new DoubleLogEntry(log, "Idx/Rotations");
     indexState = new IndexState(BallState.NONE);
   }
 
@@ -64,8 +62,6 @@ public class Index extends SubsystemBase {
   public void periodic() {
     if(motor.getOutputCurrent() != lastIndexAmps) indexAmperageLog.append(motor.getOutputCurrent());
     lastIndexAmps = motor.getOutputCurrent();
-    if(getIndexPosition() != lastRotationNumber) rotationNumberLog.append(getIndexPosition());
-    lastRotationNumber = getIndexPosition();
     SmartDashboard.putNumber("Index Position", getIndexPosition());
   }
 
