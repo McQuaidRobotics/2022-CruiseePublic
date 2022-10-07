@@ -10,6 +10,9 @@ import com.revrobotics.CANSparkMax.IdleMode;
 import com.revrobotics.CANSparkMaxLowLevel.MotorType;
 import com.revrobotics.RelativeEncoder;
 import com.revrobotics.SparkMaxPIDController;
+
+import edu.wpi.first.math.filter.Debouncer;
+import edu.wpi.first.math.filter.Debouncer.DebounceType;
 import edu.wpi.first.util.datalog.DataLog;
 import edu.wpi.first.util.datalog.DoubleLogEntry;
 import edu.wpi.first.wpilibj.DigitalInput;
@@ -19,6 +22,7 @@ import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Robot;
 import frc.robot.constants.kCANIDs;
+import frc.robot.constants.kControl;
 import frc.robot.constants.kDIO;
 
 
@@ -31,7 +35,6 @@ public class Index extends SubsystemBase {
   private final DoubleLogEntry indexAmperageLog;
   private final DoubleLogEntry rotationNumberLog;
   private IndexState indexState;
-  
   public Index() {
     motor = new CANSparkMax(kCANIDs.IDX_MOTOR, MotorType.kBrushless);
     motor.restoreFactoryDefaults();
@@ -114,15 +117,15 @@ public class Index extends SubsystemBase {
     public BallState ballState;  
     boolean prevDetected = false;
     boolean currDetected = true;
+    private Debouncer debounce = new Debouncer(kControl.INDEX_DEBOUNCE_TIME, DebounceType.kBoth);
 
     public IndexState(BallState startingState){
       this.ballState = startingState;
     }
 
     public void update(boolean newDetected){
-      prevDetected = currDetected;
-      currDetected = newDetected;
-
+      currDetected = debounce.calculate(newDetected);
+    
       if(!prevDetected && currDetected){
         if(ballState == BallState.NONE){
           ballState = BallState.BOTTOM;
@@ -134,6 +137,7 @@ public class Index extends SubsystemBase {
       if(prevDetected && !currDetected && ballState == BallState.BOTTOM){
         ballState = BallState.TOP;
       }
+      prevDetected = currDetected;
     }
     public void setState(BallState state){
       this.ballState = state;

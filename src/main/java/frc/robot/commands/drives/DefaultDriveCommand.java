@@ -6,7 +6,9 @@ import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj2.command.CommandBase;
 import frc.robot.constants.kSwerve;
 import frc.robot.subsystems.drives.Drives;
+import frc.robot.utils.TrackingHelper;
 
+import java.util.function.BooleanSupplier;
 import java.util.function.DoubleSupplier;
 
 public class DefaultDriveCommand extends CommandBase {
@@ -18,21 +20,24 @@ public class DefaultDriveCommand extends CommandBase {
 
     private double lastRotationSpeed = 0;
     private Rotation2d setpointAngle = new Rotation2d(); // Degrees
-
-    public DefaultDriveCommand(Drives drives, DoubleSupplier translationXSupplier, DoubleSupplier translationYSupplier, DoubleSupplier rotationSupplier) {
+    private BooleanSupplier activateVision;
+    private TrackingHelper trackingHelper;
+    public DefaultDriveCommand(Drives drives, DoubleSupplier translationXSupplier, DoubleSupplier translationYSupplier, DoubleSupplier rotationSupplier, BooleanSupplier activateVision) {
         this.drives = drives;
         this.translationXSupplier = translationXSupplier;
         this.translationYSupplier = translationYSupplier;
         this.rotationSupplier = rotationSupplier;
-
+        this.activateVision = activateVision;
+        trackingHelper = new TrackingHelper(drives);
         addRequirements(drives);
     }
 
     @Override
     public void execute() {
+        trackingHelper.update();
         if(DriverStation.isTeleop() && drives.getRunDrives()) {
-            double rotationSpeed = rotationSupplier.getAsDouble();
-
+            double rotationSpeed = !activateVision.getAsBoolean() ? rotationSupplier.getAsDouble() : trackingHelper.getRotSpeed();
+            
             // correct for angle 
             if (rotationSpeed == 0) {
                 if (lastRotationSpeed != 0) {
