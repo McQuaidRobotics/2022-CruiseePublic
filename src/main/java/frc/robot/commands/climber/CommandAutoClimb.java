@@ -62,7 +62,7 @@ public class CommandAutoClimb extends SequentialCommandGroup {
       new InstantCommand(() -> Robot.setLED(kLED.CLIMB_SECOND_BAR)),
       new CommandMoveReach(climber.innerArm, kClimb.CLIMB_MIN_EXTEND, true),
       // new CommandWaitForButton(gamepad, kClimb.CLIMB_BUTTON),
-      new CommandMoveAngle(climber.innerArm, 15, CurrentLimitType.OFF, kClimb.CLIMB_ANGLE_ALLOWED_ERROR_GENERAL),
+      new CommandMoveAngle(climber.innerArm, 23, CurrentLimitType.OFF, kClimb.CLIMB_ANGLE_ALLOWED_ERROR_GENERAL),
       // new CommandWaitForButton(gamepad, kClimb.CLIMB_BUTTON),
       
       new CommandMoveReach(climber.outerArm, kClimb.CLIMB_MAX_EXTEND, true, kClimb.INNER_NOLOAD_STALL_CURRENT_REACH),
