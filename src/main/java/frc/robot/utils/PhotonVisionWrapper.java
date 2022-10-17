@@ -19,11 +19,17 @@ public class PhotonVisionWrapper {
     } 
     public double getYaw(){
         var results = cam.getLatestResult();
+        if(results == null){
+            return 0;
+        }
         return (results.hasTargets())?results.getBestTarget().getYaw():0;
     } 
     public double getDistance(){
         var results = cam.getLatestResult();
         double distance = 0;
+        if(results == null){
+            return 0;
+        }
         if(results.hasTargets()){
             double x = results.getBestTarget().getCameraToTarget().getX();
             double y = results.getBestTarget().getCameraToTarget().getX();

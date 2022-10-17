@@ -24,6 +24,7 @@ import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Robot;
 import frc.robot.constants.kCANIDs;
 import frc.robot.constants.kSwerve;
+import edu.wpi.first.math.numbers.N1;
 
 import static frc.robot.constants.kSwerve.*;
 

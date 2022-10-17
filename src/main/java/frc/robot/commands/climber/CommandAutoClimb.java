@@ -53,7 +53,7 @@ public class CommandAutoClimb extends SequentialCommandGroup {
       
       
       new InstantCommand(()-> climber.outerArm.setAngleToBrake()),
-      new CommandMoveAngle(climber.outerArm, 5, CurrentLimitType.OFF, kClimb.CLIMB_ANGLE_ALLOWED_ERROR_GENERAL),
+      new CommandMoveAngle(climber.outerArm, 10, CurrentLimitType.OFF, kClimb.CLIMB_ANGLE_ALLOWED_ERROR_GENERAL),
       new ParallelCommandGroup(
         new CommandMoveReach(climber.innerArm, kClimb.CLIMB_MIN_EXTEND+4, true),
         new CommandMoveReach(climber.outerArm, kClimb.CLIMB_MIN_EXTEND, true)

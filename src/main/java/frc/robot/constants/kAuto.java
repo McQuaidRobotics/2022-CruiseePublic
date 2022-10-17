@@ -5,11 +5,13 @@ import edu.wpi.first.math.controller.ProfiledPIDController;
 import edu.wpi.first.math.trajectory.TrapezoidProfile;
 
 public class kAuto {
-    private static final TrapezoidProfile.Constraints CONSTRAINTS = new TrapezoidProfile.Constraints(kSwerve.MAX_ANGULAR_VELOCITY_RADIANS_PER_SECOND, 8.3);
-    public static final ProfiledPIDController THETA_PID_CONTROLLER = new ProfiledPIDController(3.5, 0.1, 0, CONSTRAINTS, 0.02);
+    private static final TrapezoidProfile.Constraints CONSTRAINTS = new TrapezoidProfile.Constraints(kSwerve.MAX_ANGULAR_VELOCITY_RADIANS_PER_SECOND, kSwerve.MAX_ANGULAR_ACCEL_RADIANS_PER_SECOND);
+    public static final ProfiledPIDController THETA_AUTO_PID = new ProfiledPIDController(3.5, 0.1, 0, CONSTRAINTS, 0.02);
+    public static final ProfiledPIDController THETA_AIMING_PID = new ProfiledPIDController(7.5, 0.1, 0, CONSTRAINTS, 0.02);
 
     static {
-        THETA_PID_CONTROLLER.enableContinuousInput(-Math.PI, Math.PI);
+        THETA_AUTO_PID.enableContinuousInput(-Math.PI, Math.PI);
+        THETA_AIMING_PID.enableContinuousInput(-Math.PI, Math.PI);
     }
 
     public static final double XY_P = 3;
