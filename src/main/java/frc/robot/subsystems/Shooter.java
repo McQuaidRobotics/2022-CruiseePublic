@@ -25,8 +25,8 @@ public class Shooter extends SubsystemBase {
   /** Creates a new ExampleSubsystem. */
   private final CANSparkMax motorFront;
   private final RelativeEncoder encoderFront;
-  private final PIDController shooterFrontPID = new PIDController(0.062343, 0, 0);
-  private final SimpleMotorFeedforward shooterFrontFF = new SimpleMotorFeedforward(0.25272, 0.0783, 0.0031292);
+  private final PIDController shooterFrontPID = new PIDController(0.087711, 0, 0);
+  private final SimpleMotorFeedforward shooterFrontFF = new SimpleMotorFeedforward(0.27065, 0.13003, 0.0041837);
   private final CANSparkMax motorBack;
   private final RelativeEncoder encoderBack;
   private final PIDController shooterBackPID = new PIDController(0, 0, 0);
@@ -72,7 +72,7 @@ public class Shooter extends SubsystemBase {
    * @param setpoint value to set it to
    */
   public void setVelocityFront(double setpoint) {
-    setpointVelocityFrontRPM = setpoint * kControl.SHOOTER_FRONT_GEAR_RATIO;
+    setpointVelocityFrontRPM = setpoint / kControl.SHOOTER_FRONT_GEAR_RATIO;
   }
 
   /**
@@ -112,8 +112,12 @@ public class Shooter extends SubsystemBase {
     if(motorBack.getOutputCurrent() != lastBackAmps) shooterBackAmpsLog.append(motorBack.getOutputCurrent());
     lastBackAmps = motorBack.getOutputCurrent();
 
-    motorFront.setVoltage(shooterFrontPID.calculate(encoderFront.getVelocity() / 60, setpointVelocityFrontRPM / 60) + shooterFrontFF.calculate(setpointVelocityFrontRPM / 60));
-    motorBack.setVoltage(shooterBackFF.calculate(setpointVelocityBackRPM / 60) + shooterBackPID.calculate(encoderBack.getVelocity() / 60, setpointVelocityBackRPM / 60));
+    if(setpointVelocityFrontRPM != 0) {
+      motorFront.setVoltage(shooterFrontPID.calculate(encoderFront.getVelocity() / 60, setpointVelocityFrontRPM / 60) + shooterFrontFF.calculate(setpointVelocityFrontRPM / 60));
+    } else motorFront.set(0);
+    if(setpointVelocityBackRPM != 0) {
+      motorBack.setVoltage(shooterBackFF.calculate(setpointVelocityBackRPM / 60) + shooterBackPID.calculate(encoderBack.getVelocity() / 60, setpointVelocityBackRPM / 60));
+    } else motorBack.set(0);
   }
 
   public static class ShooterRPMS{
