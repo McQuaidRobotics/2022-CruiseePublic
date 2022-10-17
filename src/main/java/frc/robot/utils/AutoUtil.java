@@ -6,6 +6,7 @@ package frc.robot.utils;
 
 import com.pathplanner.lib.PathPlanner;
 import com.pathplanner.lib.PathPlannerTrajectory;
+
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.wpilibj.smartdashboard.Field2d;
 import edu.wpi.first.wpilibj2.command.Command;
@@ -21,6 +22,7 @@ public class AutoUtil {
         HANGAR_TWO_BALL,
         TERMINAL_TWO_BALL,
         POTATO,
+        NOTHING,
         DEFAULT,
         TEST
     }
