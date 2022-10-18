@@ -58,8 +58,10 @@ public class Shooter extends SubsystemBase {
     ShuffleboardTab tab = Shuffleboard.getTab("Shooter");
     tab.addNumber("Setpoint RPM Front", () -> setpointVelocityFrontRPM).withPosition(0, 0).withSize(0, 0);
     tab.addNumber("Actual RPM Front", this::getVelocityFront).withPosition(1, 0).withSize(0, 0);
+    tab.addNumber("Mechanism Setpoint RPM Front", () -> setpointVelocityFrontRPM * kControl.SHOOTER_FRONT_GEAR_RATIO).withPosition(2, 0).withSize(0, 0);
     tab.addNumber("Setpoint RPM Back", () -> setpointVelocityBackRPM).withPosition(0, 1).withSize(0, 0);
     tab.addNumber("Actual RPM Back", this::getVelocityBack).withPosition(1, 1).withSize(0, 0);
+    tab.addNumber("Mechanism Setpoint RPM Back", () -> setpointVelocityBackRPM * kControl.SHOOTER_BACK_GEAR_RATIO).withPosition(2, 1).withSize(0, 0);
 
     DataLog log = Robot.getDataLog();
     shooterFrontAmpsLog = new DoubleLogEntry(log, "Shooter/Front-Amps");
@@ -81,7 +83,7 @@ public class Shooter extends SubsystemBase {
    * @param setpoint value to set it to
    */
   public void setVelocityBack(double setpoint) {
-    setpointVelocityBackRPM = setpoint * kControl.SHOOTER_BACK_GEAR_RATIO;
+    setpointVelocityBackRPM = setpoint / kControl.SHOOTER_BACK_GEAR_RATIO;
   }
 
   /**
@@ -100,11 +102,6 @@ public class Shooter extends SubsystemBase {
     return encoderBack.getVelocity();
   }
 
-  public void setPercentOut(double percent) {
-    motorFront.set(percent);
-    motorBack.set(percent);
-  }
-
   @Override
   public void periodic() {
     if(motorFront.getOutputCurrent() != lastFrontAmps) shooterFrontAmpsLog.append(motorFront.getOutputCurrent());
@@ -112,11 +109,14 @@ public class Shooter extends SubsystemBase {
     if(motorBack.getOutputCurrent() != lastBackAmps) shooterBackAmpsLog.append(motorBack.getOutputCurrent());
     lastBackAmps = motorBack.getOutputCurrent();
 
+    double outputVoltsFront = shooterFrontPID.calculate(encoderFront.getVelocity() / 60, setpointVelocityFrontRPM / 60) + shooterFrontFF.calculate(setpointVelocityFrontRPM / 60);
     if(setpointVelocityFrontRPM != 0) {
-      motorFront.setVoltage(shooterFrontPID.calculate(encoderFront.getVelocity() / 60, setpointVelocityFrontRPM / 60) + shooterFrontFF.calculate(setpointVelocityFrontRPM / 60));
+      motorFront.setVoltage(outputVoltsFront);
     } else motorFront.set(0);
+
+    double outputVoltsBack = shooterBackFF.calculate(setpointVelocityBackRPM / 60) + shooterBackPID.calculate(encoderBack.getVelocity() / 60, setpointVelocityBackRPM / 60);
     if(setpointVelocityBackRPM != 0) {
-      motorBack.setVoltage(shooterBackFF.calculate(setpointVelocityBackRPM / 60) + shooterBackPID.calculate(encoderBack.getVelocity() / 60, setpointVelocityBackRPM / 60));
+      motorBack.setVoltage(outputVoltsBack);
     } else motorBack.set(0);
   }
 

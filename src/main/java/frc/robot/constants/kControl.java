@@ -17,10 +17,10 @@ public class kControl {
     public static final double ACQUISITION_RPMS = 5000;
 
     // Shooter
-    public static final double SHOOTER_FRONT_GEAR_RATIO = 30 / 18;
+    public static final double SHOOTER_FRONT_GEAR_RATIO = 30.0 / 18.0;
     public static final double SHOOTER_BACK_GEAR_RATIO = 1;
 
-    public static final ShooterRPMS SHOOTER_LOW_RPMS = new ShooterRPMS(500, 4000);
-    public static final ShooterRPMS SHOOTER_HIGH_RPMS = new ShooterRPMS(4500, 5000);
-    public static final ShooterRPMS SHOOTER_AUTO_RPMS = new ShooterRPMS(4400, 4900);
+    public static final ShooterRPMS SHOOTER_LOW_RPMS = new ShooterRPMS(830, 4000);
+    public static final ShooterRPMS SHOOTER_HIGH_RPMS = new ShooterRPMS(7500, 5000);
+    public static final ShooterRPMS SHOOTER_AUTO_RPMS = new ShooterRPMS(7300, 4900);
 }
