@@ -6,6 +6,7 @@ package frc.robot.commands.shooter;
 
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.CommandBase;
+import frc.robot.constants.kControl;
 import frc.robot.subsystems.Shooter;
 import frc.robot.subsystems.Shooter.ShooterRPMS;
 
@@ -41,11 +42,10 @@ public class CommandRunShooter extends CommandBase {
   @Override
   public void end(boolean interrupted) {
     SmartDashboard.putBoolean("shooter/isRPM", true);
-    System.out.println(shooter.getVelocityBack() + " + " + shooter.getVelocityFront());
   }
 
   @Override
   public boolean isFinished() {
-    return (Math.abs(shooter.getVelocityFront() - RPMFront) < 50 && Math.abs(shooter.getVelocityBack() - RPMBack) < 50) || isInstant;
+    return (Math.abs(shooter.getVelocityFront() - (RPMFront / kControl.SHOOTER_FRONT_GEAR_RATIO)) < 50 && Math.abs(shooter.getVelocityBack() - RPMBack) < 50) || isInstant;
   }
 }
