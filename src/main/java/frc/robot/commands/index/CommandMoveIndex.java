@@ -32,7 +32,6 @@ public class CommandMoveIndex extends CommandBase {
 
   @Override
   public void end(boolean interrupted) {
-    index.removeBall();
   }
 
   @Override
