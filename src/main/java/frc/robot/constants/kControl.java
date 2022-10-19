@@ -20,6 +20,8 @@ public class kControl {
     public static final double SHOOTER_FRONT_GEAR_RATIO = 30.0 / 18.0;
     public static final double SHOOTER_BACK_GEAR_RATIO = 1;
 
+    public static final int SPINUP_TIMEOUT_SECONDS = 5;
+
     public static final ShooterRPMS SHOOTER_LOW_RPMS = new ShooterRPMS(830, 4000);
     public static final ShooterRPMS SHOOTER_HIGH_RPMS = new ShooterRPMS(7500, 5000);
     public static final ShooterRPMS SHOOTER_AUTO_RPMS = new ShooterRPMS(7300, 4900);
