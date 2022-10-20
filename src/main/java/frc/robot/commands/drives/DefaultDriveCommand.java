@@ -41,7 +41,7 @@ public class DefaultDriveCommand extends CommandBase {
                 Rotation2d angleOffset = setpointAngle.minus(drives.getRotation());
 
                 if (Math.abs(angleOffset.getDegrees()) > kSwerve.SWERVE_ALLOWED_OFFSET) {
-                    rotationSpeed = kSwerve.SWERVE_CORRECTION_SPEED * (angleOffset.getDegrees() / Math.abs(angleOffset.getDegrees()));
+                    rotationSpeed = kSwerve.SWERVE_CORRECTION_SPEED * Math.signum(angleOffset.getDegrees());
                 }
             }
 
