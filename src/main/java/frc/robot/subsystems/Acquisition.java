@@ -59,6 +59,7 @@ public class Acquisition extends SubsystemBase {
 
   public void retractArms(){
     arms.set(false);
+    setpointRPM = 0;
   }
 
   public boolean areArmsExtended(){

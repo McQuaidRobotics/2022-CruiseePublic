@@ -21,7 +21,6 @@ import frc.robot.commands.drives.DefaultDriveCommand;
 import frc.robot.commands.index.DefaultIndex;
 import frc.robot.commands.shooter.CommandRunShooter;
 import frc.robot.commands.shooter.ComplexShootBalls;
-import frc.robot.commands.shooter.ComplexSpinUpShooter;
 import frc.robot.constants.kCANIDs;
 import frc.robot.constants.kControl;
 import frc.robot.constants.kSwerve;
@@ -87,8 +86,8 @@ public class RobotContainer {
                 .whenPressed(new ComplexShootBalls(shooter, index, acquisition, 2, kControl.SHOOTER_HIGH_RPMS), false);
         new Button(driverController::getXButton)
                 .whenPressed(new ComplexShootBalls(shooter, index, acquisition, 1, kControl.SHOOTER_LOW_RPMS), false);
-        new Button(driverController::getYButton)
-                .whenPressed(new ComplexSpinUpShooter(shooter, acquisition, kControl.SHOOTER_HIGH_RPMS));
+        new Button(driverController::getYButton);
+//                .whenPressed(new ComplexSpinUpShooter(shooter, acquisition, kControl.SHOOTER_HIGH_RPMS));
 
 
         // POV
@@ -226,6 +225,8 @@ public class RobotContainer {
                         AutoUtil.generateCommand("Potato", drives)
                 ).schedule();
                 break;
+            case NOTHING:
+                return;
             case DEFAULT:
                 new SequentialCommandGroup(
                         AutoUtil.generateCommand("Default", drives)
