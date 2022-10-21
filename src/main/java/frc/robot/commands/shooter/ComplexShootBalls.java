@@ -4,6 +4,7 @@
 
 package frc.robot.commands.shooter;
 
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.ParallelRaceGroup;
 import edu.wpi.first.wpilibj2.command.SequentialCommandGroup;
@@ -28,19 +29,11 @@ public class ComplexShootBalls extends SequentialCommandGroup {
         new WaitCommand(kControl.SPINUP_TIMEOUT_SECONDS)
       ),
       new CommandMoveIndex(index, balls * kControl.INDEX_ONE_BALL_ROTATIONS),
-      removeBalls(index, balls),
+      new InstantCommand(() -> index.removeBalls(balls)),
       new InstantCommand(() -> shooter.setVelocityFront(0)),
       new InstantCommand(() -> shooter.setVelocityBack(0)),
       new InstantCommand(() -> index.runPercentOut(0)),
       new InstantCommand(() -> acquisition.setRollerRPM(kControl.ACQUISITION_RPMS))
     );
-  }
-
-  private SequentialCommandGroup removeBalls(Index index, int balls){
-    var command = new SequentialCommandGroup();
-    for(int i = 0; i < balls; i++){
-      command.addCommands(new InstantCommand(() -> index.removeBall()));
-    }
-    return command;
   }
 }

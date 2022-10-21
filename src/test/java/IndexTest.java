@@ -33,6 +33,12 @@ public class IndexTest {
         state.update(true);
         assert(state.getState() == BallState.BOTH);
         assert(state.getDesiredState() == BallState.BOTH);
+        state.removeBall();
+        assert(state.getState() == BallState.TOP);
+        assert(state.getDesiredState() == BallState.TOP);
+        state.removeBall();
+        assert(state.getState() == BallState.NONE);
+        assert(state.getDesiredState() == BallState.NONE);
     }
     @Test
     public void testCommandSequence(){

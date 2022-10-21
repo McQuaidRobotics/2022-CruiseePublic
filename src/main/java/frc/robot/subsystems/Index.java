@@ -99,7 +99,12 @@ public class Index extends SubsystemBase {
   }
 
   public void removeBall(){
-    indexState.removeBall();;
+    indexState.removeBall();
+  }
+  public void removeBalls(int balls){
+    for(int i = 0; i < balls; i++){
+      indexState.removeBall();
+    }
   }
 
   public enum BallState{
@@ -161,12 +166,10 @@ public class Index extends SubsystemBase {
     public void removeBall(){
       if(ballState == BallState.BOTH){
         ballState = BallState.TOP;
-      }
-      if(ballState == BallState.TOP){
+      } else if(ballState == BallState.TOP){
         ballState = BallState.NONE;
-      }
-      if(ballState == BallState.BOTTOM){
-        ballState = BallState.TOP;
+      } else if(ballState == BallState.BOTTOM){
+        ballState = BallState.NONE;
       }
     }
   }
