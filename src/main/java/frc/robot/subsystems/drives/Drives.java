@@ -6,6 +6,12 @@ package frc.robot.subsystems.drives;
 
 import com.ctre.phoenix.sensors.Pigeon2;
 import com.ctre.phoenix.sensors.WPI_Pigeon2;
+
+import org.photonvision.PhotonUtils;
+
+import edu.wpi.first.math.MatBuilder;
+import edu.wpi.first.math.Nat;
+import edu.wpi.first.math.estimator.SwerveDrivePoseEstimator;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Translation2d;
@@ -24,6 +30,8 @@ import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Robot;
 import frc.robot.constants.kCANIDs;
 import frc.robot.constants.kSwerve;
+import frc.robot.constants.kVision;
+import frc.robot.utils.PoseCamera;
 import edu.wpi.first.math.numbers.N1;
 
 import static frc.robot.constants.kSwerve.*;
@@ -45,16 +53,23 @@ public class Drives extends SubsystemBase {
                     // Back Left
                     new Translation2d(-DRIVETRAIN_TRACKWIDTH_METERS / 2.0, -DRIVETRAIN_WHEELBASE_METERS / 2.0)
     );
-    private final SwerveDriveOdometry odometry;
+    private final SwerveDrivePoseEstimator odometry;
     private final Field2d field = new Field2d();
 
     private final DoubleLogEntry pigeonLog;
+    private final PoseCamera visionMeasure = new PoseCamera("gloworm");
 
     public Drives() {
         pigeonTwo.configFactoryDefault();
         pigeonTwo.reset();
         
-        odometry = new SwerveDriveOdometry(kinematics, new Rotation2d(0), new Pose2d(new Translation2d(0, 0), new Rotation2d(0)));
+        odometry = new SwerveDrivePoseEstimator( new Rotation2d(0), 
+                                new Pose2d(new Translation2d(0, 0), new Rotation2d(0)),
+                                kinematics,
+                                new MatBuilder<>(Nat.N3(), Nat.N1()).fill(0.02, 0.02, 0.01), 
+                                new MatBuilder<>(Nat.N1(), Nat.N1()).fill(0.02), 
+                                new MatBuilder<>(Nat.N3(), Nat.N1()).fill(0.1, 0.1, 0.01) 
+                        );
 
         SmartDashboard.putData("Field", field);
 
@@ -79,6 +94,8 @@ public class Drives extends SubsystemBase {
 
         DataLog log = Robot.getDataLog();
         pigeonLog = new DoubleLogEntry(log, "Drives/pigeonRot");
+
+        visionMeasure.addVisionTargetPose(0.5, 0.5);
     }
 
     /**
@@ -94,7 +111,7 @@ public class Drives extends SubsystemBase {
     }
 
     public Rotation2d getRotation() {
-        return odometry.getPoseMeters().getRotation();
+        return odometry.getEstimatedPosition().getRotation();
     }
 
     public void setOdometryPose(Pose2d pose) {
@@ -102,7 +119,7 @@ public class Drives extends SubsystemBase {
     }
 
     public Pose2d getPose() {
-        return odometry.getPoseMeters();
+        return odometry.getEstimatedPosition();
     }
 
     public void updateModules(SwerveModuleState[] newStates){
@@ -142,6 +159,16 @@ public class Drives extends SubsystemBase {
         pigeonLog.append(pigeonTwo.getRotation2d().getDegrees());
 
         odometry.update(pigeonTwo.getRotation2d(), getRealStates());
-        field.setRobotPose(getPose());
+        odometry.addVisionMeasurement(visionMeasure.getVisionPose(odometry.getEstimatedPosition()), visionMeasure.getTimestamp());
+        
+        SmartDashboard.putNumber("odometry.getEstimatedPositionX", odometry.getEstimatedPosition().getX());
+        SmartDashboard.putNumber("odometry.getEstimatedPositionY", odometry.getEstimatedPosition().getY());
+        var pose = getPose();
+        field.setRobotPose(pose);
+        var target = visionMeasure.getObject(0);
+        if(target != null){
+            double distance = pose.getTranslation().getDistance(target);
+            // SmartDashboard.putNumber("distanceToTarget", distance);
+        }
     }
 }
