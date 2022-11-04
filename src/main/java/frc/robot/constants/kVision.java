@@ -10,4 +10,6 @@ public class kVision {
     public static final double CAMERA_PITCH = Units.degreesToRadians(50);
     public static final double FIELD_WIDTH = 16.5; // m
     public static final double FIELD_HEIGHT = 8.1; // m
+
+    public static final double DEBOUNCE_TIME = 0.1;
 }

@@ -10,6 +10,8 @@ import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
+import edu.wpi.first.math.filter.Debouncer;
+import edu.wpi.first.math.filter.Debouncer.DebounceType;
 
 import frc.robot.constants.kVision;
 
@@ -17,6 +19,8 @@ import frc.robot.constants.kVision;
 public class PoseCamera {
     PhotonVisionWrapper camera;
     ArrayList<Translation2d> objects;
+    Debouncer targetDebouncer = new Debouncer(kVision.DEBOUNCE_TIME, DebounceType.kRising);
+    
     public PoseCamera(String name){
         camera = new PhotonVisionWrapper(name);
         objects = new ArrayList<Translation2d>();
@@ -34,7 +38,8 @@ public class PoseCamera {
     }
     public Pose2d getVisionPose(Pose2d current){
         double distance = getDistance();
-        if(distance == -1){
+
+        if(distance == -1 || !targetDebouncer.calculate(distance != -1)){
             return current;
         }
         Rotation2d theta = current.getRotation();
