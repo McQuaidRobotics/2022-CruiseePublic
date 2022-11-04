@@ -12,6 +12,7 @@ public class IndexTest {
     public void Setup(){
         // assert HAL.initialize(500, 0);
         state = new IndexState(BallState.NONE);
+        state.setTest(true);
     }
     @Test
     public void testBallsIndexed(){
