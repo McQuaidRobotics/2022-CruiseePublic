@@ -42,7 +42,7 @@ public class AutoUtil {
                     drives.getKinematics(),
                     kAuto.X_PID_CONTROLLER,
                     kAuto.Y_PID_CONTROLLER,
-                    kAuto.THETA_PID_CONTROLLER,
+                    kAuto.THETA_AUTO_PID,
                     drives::updateModules
                 )
         );

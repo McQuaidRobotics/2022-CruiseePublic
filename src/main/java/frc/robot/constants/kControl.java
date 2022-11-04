@@ -12,6 +12,7 @@ public class kControl {
     public static final double INDEX_ALLOWED_ERROR_ROTATIONS = 0.5;
     public static final double INDEX_ONE_BALL_ROTATIONS = 80; // Guess for shooter
     public static final double INDEX_MOVE_BACK = -10;
+    public static final double INDEX_DEBOUNCE_TIME = 0.01;
 
     // Acquisition
     public static final double ACQUISITION_RPMS = 5000;
@@ -25,4 +26,5 @@ public class kControl {
     public static final ShooterRPMS SHOOTER_LOW_RPMS = new ShooterRPMS(830, 4000);
     public static final ShooterRPMS SHOOTER_HIGH_RPMS = new ShooterRPMS(7500, 5000);
     public static final ShooterRPMS SHOOTER_AUTO_RPMS = new ShooterRPMS(7300, 4900);
+
 }
