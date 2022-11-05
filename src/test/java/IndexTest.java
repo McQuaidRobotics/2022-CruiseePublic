@@ -1,19 +1,18 @@
-import org.junit.*;
-
-import edu.wpi.first.hal.HAL;
-import frc.robot.commands.index.DefaultIndex;
-import frc.robot.subsystems.Index;
 import frc.robot.subsystems.Index.BallState;
 import frc.robot.subsystems.Index.IndexState;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
 
 public class IndexTest {
     IndexState state;
-    @Before
+
+    @BeforeAll
     public void Setup(){
         // assert HAL.initialize(500, 0);
         state = new IndexState(BallState.NONE);
         state.setTest(true);
     }
+
     @Test
     public void testBallsIndexed(){
         state.update(false);
@@ -40,9 +39,5 @@ public class IndexTest {
         state.removeBall();
         assert(state.getState() == BallState.NONE);
         assert(state.getDesiredState() == BallState.NONE);
-    }
-    @Test
-    public void testCommandSequence(){
-        
     }
 }
