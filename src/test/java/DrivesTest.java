@@ -8,10 +8,10 @@ import org.junit.jupiter.api.BeforeAll;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 public class DrivesTest {
-    Drives drives;
+    static Drives drives;
 
     @BeforeAll
-    public void setup() {
+    public static void setup() {
         drives = new Drives();
     }
 
