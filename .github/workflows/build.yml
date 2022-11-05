@@ -16,5 +16,5 @@ jobs:
         run: chmod +x gradlew
 
       # Build
-      - name: Compile and run tests on robot code
+      - name: Build code
         run: ./gradlew build
