@@ -52,6 +52,16 @@ public class UnitUtil {
     }
 
     /**
+     * @param positioncounts Falcon Position Counts
+     * @param circumference Circumference of Wheel
+     * @param gearRatio Gear Ratio between Falcon and Mechanism (set to 1 for Falcon RPM)
+     * @return Meters Distance
+     */
+    public static double falconToM(double positioncounts, double circumference, double gearRatio){
+        double wheelRPM = falconToRPM(positioncounts, gearRatio); //technically correct
+        return (wheelRPM * circumference);
+    }
+    /**
      * @param velocity Velocity MPS
      * @param circumference Circumference of Wheel
      * @param gearRatio Gear Ratio between Falcon and Mechanism (set to 1 for Falcon RPM)

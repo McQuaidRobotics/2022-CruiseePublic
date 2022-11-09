@@ -11,12 +11,14 @@ import org.photonvision.PhotonUtils;
 
 import edu.wpi.first.math.MatBuilder;
 import edu.wpi.first.math.Nat;
+import edu.wpi.first.math.Num;
 import edu.wpi.first.math.estimator.SwerveDrivePoseEstimator;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.kinematics.SwerveDriveKinematics;
 import edu.wpi.first.math.kinematics.SwerveDriveOdometry;
+import edu.wpi.first.math.kinematics.SwerveModulePosition;
 import edu.wpi.first.math.kinematics.SwerveModuleState;
 import edu.wpi.first.util.datalog.DataLog;
 import edu.wpi.first.util.datalog.DoubleLogEntry;
@@ -33,7 +35,9 @@ import frc.robot.constants.kSwerve;
 import frc.robot.constants.kVision;
 import frc.robot.utils.PoseCamera;
 import edu.wpi.first.math.numbers.N1;
-
+import edu.wpi.first.math.numbers.N3;
+import edu.wpi.first.math.numbers.N4;
+import edu.wpi.first.math.numbers.N7;
 
 import static frc.robot.constants.kSwerve.CANIVORE_NAME;
 import static frc.robot.constants.kSwerve.DRIVETRAIN_TRACKWIDTH_METERS;
@@ -61,7 +65,8 @@ public class Drives extends SubsystemBase {
                     // Back Left
                     new Translation2d(-DRIVETRAIN_TRACKWIDTH_METERS / 2.0, -DRIVETRAIN_WHEELBASE_METERS / 2.0)
     );
-    private final SwerveDrivePoseEstimator odometry;
+    private final SwerveDriveOdometry odometry;
+    // private final SwerveDrivePoseEstimator<N7, N7, N7> odometry;
     private final Field2d field = new Field2d();
 
     private double lastPigeonRotation;
@@ -72,13 +77,6 @@ public class Drives extends SubsystemBase {
         pigeonTwo.configFactoryDefault();
         pigeonTwo.reset();
         
-        odometry = new SwerveDrivePoseEstimator( new Rotation2d(0), 
-                                new Pose2d(new Translation2d(0, 0), new Rotation2d(0)),
-                                kinematics,
-                                new MatBuilder<>(Nat.N3(), Nat.N1()).fill(0.02, 0.02, 0.01), 
-                                new MatBuilder<>(Nat.N1(), Nat.N1()).fill(0.02), 
-                                new MatBuilder<>(Nat.N3(), Nat.N1()).fill(0.1, 0.1, 0.01) 
-                        );
 
         SmartDashboard.putData("Field", field);
 
@@ -88,6 +86,18 @@ public class Drives extends SubsystemBase {
                 new SwerveModule(2, CANIVORE_NAME, kCANIDs.REAR_RIGHT_DRIVE, kCANIDs.REAR_RIGHT_STEER, kCANIDs.REAR_RIGHT_CANCODER, REAR_RIGHT_MODULE_STEER_OFFSET),
                 new SwerveModule(3, CANIVORE_NAME, kCANIDs.REAR_LEFT_DRIVE, kCANIDs.REAR_LEFT_STEER, kCANIDs.REAR_LEFT_CANCODER, REAR_LEFT_MODULE_STEER_OFFSET)
         };
+
+        
+        // odometry = new SwerveDrivePoseEstimator<>(Nat.N7(),Nat.N7(),Nat.N7(),
+        //                          new Rotation2d(0), 
+        //                         new Pose2d(new Translation2d(0, 0), new Rotation2d(0)),
+        //                         getModulePositions(),
+        //                         kinematics,
+        //                         new MatBuilder<>(Nat.N7(), Nat.N1()).fill(0.02, 0.02, 0.01, 0.001,0.001,0.001,0.001), 
+        //                         new MatBuilder<>(Nat.N7(), Nat.N1()).fill(0.02, 0.02, 0.01, 0.001,0.001,0.001,0.001), 
+        //                         new MatBuilder<>(Nat.N3(), Nat.N1()).fill(0.1, 0.1, 0.01) 
+        //                 );
+        odometry = new SwerveDriveOdometry(kinematics, new Rotation2d(0), getModulePositions(), new Pose2d(new Translation2d(0, 0), new Rotation2d(0)));
 
         ShuffleboardTab tab = Shuffleboard.getTab("Drives");
 
@@ -104,9 +114,19 @@ public class Drives extends SubsystemBase {
         DataLog log = Robot.getDataLog();
         pigeonLog = new DoubleLogEntry(log, "Drives/pigeonRot");
 
+        
         visionMeasure.addVisionTargetPose(0.5, 0.5);
     }
 
+    public SwerveModulePosition[] getModulePositions(){
+        SwerveModulePosition[] positions = new SwerveModulePosition[] {
+            modules[0].getPosition(),
+            modules[1].getPosition(),
+            modules[2].getPosition(),
+            modules[3].getPosition()
+        };
+        return positions;
+    }
     /**
      * Sets the gyroscope angle to zero. This can be used to set the direction the robot is currently facing to the
      * 'forwards' direction.
@@ -120,7 +140,7 @@ public class Drives extends SubsystemBase {
     }
 
     public Rotation2d getRotation() {
-        return odometry.getEstimatedPosition().getRotation();
+        return odometry.getPoseMeters().getRotation();
     }
 
     public void setOdometryPose(Pose2d pose) {
@@ -128,7 +148,7 @@ public class Drives extends SubsystemBase {
     }
 
     public Pose2d getPose() {
-        return odometry.getEstimatedPosition();
+        return odometry.getPoseMeters();
     }
 
     public void updateModules(SwerveModuleState[] newStates){
@@ -168,11 +188,11 @@ public class Drives extends SubsystemBase {
         if(pigeonTwo.getRotation2d().getDegrees() != lastPigeonRotation) pigeonLog.append(pigeonTwo.getRotation2d().getDegrees());
         lastPigeonRotation = pigeonTwo.getRotation2d().getDegrees();
 
-        odometry.update(pigeonTwo.getRotation2d(), getRealStates());
-        odometry.addVisionMeasurement(visionMeasure.getVisionPose(odometry.getEstimatedPosition()), visionMeasure.getTimestamp());
+        odometry.update(pigeonTwo.getRotation2d(), getModulePositions());
+        // odometry.addVisionMeasurement(visionMeasure.getVisionPose(odometry.getPoseMeters()), visionMeasure.getTimestamp());
         
-        SmartDashboard.putNumber("odometry.getEstimatedPositionX", odometry.getEstimatedPosition().getX());
-        SmartDashboard.putNumber("odometry.getEstimatedPositionY", odometry.getEstimatedPosition().getY());
+        SmartDashboard.putNumber("odometry.getEstimatedPositionX", odometry.getPoseMeters().getX());
+        SmartDashboard.putNumber("odometry.getEstimatedPositionY", odometry.getPoseMeters().getY());
         var pose = getPose();
         field.setRobotPose(pose);
         var target = visionMeasure.getObject(0);

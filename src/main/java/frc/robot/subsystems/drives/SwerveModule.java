@@ -12,6 +12,7 @@ import com.ctre.phoenix.sensors.SensorInitializationStrategy;
 import com.ctre.phoenix.sensors.SensorTimeBase;
 
 import edu.wpi.first.math.geometry.Rotation2d;
+import edu.wpi.first.math.kinematics.SwerveModulePosition;
 import edu.wpi.first.math.kinematics.SwerveModuleState;
 import frc.robot.constants.kSwerve;
 import frc.robot.utils.SwerveUtil;
@@ -133,4 +134,9 @@ public class SwerveModule {
         return new SwerveModuleState(velocity, angle);
     }
 
+    public SwerveModulePosition getPosition(){
+        double distance = UnitUtil.falconToM(driveMotor.getSelectedSensorPosition(), kSwerve.WHEEL_CIRCUMFERENCE_METERS, kSwerve.DRIVE_GEAR_RATIO);
+        Rotation2d angle = Rotation2d.fromDegrees(UnitUtil.falconToDegrees(angleMotor.getSelectedSensorPosition(), kSwerve.ANGLE_GEAR_RATIO));
+        return new SwerveModulePosition(distance, angle);
+    }
 }

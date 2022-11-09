@@ -12,7 +12,9 @@ import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.SequentialCommandGroup;
 import edu.wpi.first.wpilibj2.command.WaitCommand;
 import edu.wpi.first.wpilibj2.command.button.Button;
+import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import edu.wpi.first.wpilibj2.command.button.POVButton;
+import edu.wpi.first.wpilibj2.command.button.Trigger;
 import frc.robot.commands.acquisition.DefaultAcquisition;
 import frc.robot.commands.climber.CommandAutoClimb;
 import frc.robot.commands.climber.CommandOnCancelClimb;
@@ -21,6 +23,7 @@ import frc.robot.commands.drives.DefaultDriveCommand;
 import frc.robot.commands.index.DefaultIndex;
 import frc.robot.commands.shooter.CommandRunShooter;
 import frc.robot.commands.shooter.ComplexShootBalls;
+import frc.robot.commands.shooter.ComplexSpinUpShooter;
 import frc.robot.constants.kCANIDs;
 import frc.robot.constants.kControl;
 import frc.robot.constants.kSwerve;
@@ -37,8 +40,8 @@ public class RobotContainer {
     public final PowerDistribution pdp = new PowerDistribution(kCANIDs.PDP, PowerDistribution.ModuleType.kRev);
     public final PneumaticHub pneumaticHub = new PneumaticHub(kCANIDs.PNEUMATIC_HUB);
 
-    private final XboxController driverController = new XboxController(0);
-    private final XboxController operatorController = new XboxController(1);
+    private final CommandXboxController driverController = new CommandXboxController(0);
+    private final CommandXboxController operatorController = new CommandXboxController(1);
 
     private ControllerRumble driverControllerLeftRumble = new ControllerRumble(0, 0);
     private ControllerRumble driverControllerRightRumble = new ControllerRumble(0, 0);
@@ -58,7 +61,7 @@ public class RobotContainer {
                         () -> -modifyAxis(driverController.getLeftY()) * kSwerve.MAX_VELOCITY_METERS_PER_SECOND * (1 - (modifyAxis(driverController.getLeftTriggerAxis()) * 0.9)),
                         () -> -modifyAxis(driverController.getLeftX()) * kSwerve.MAX_VELOCITY_METERS_PER_SECOND * (1 - (modifyAxis(driverController.getLeftTriggerAxis()) * 0.9)),
                         () -> -modifyAxis(driverController.getRightX()) * kSwerve.MAX_ANGULAR_VELOCITY_RADIANS_PER_SECOND * (1 - (modifyAxis(driverController.getLeftTriggerAxis()) * 0.9)),
-                        () -> driverController.getRightStickButton()
+                        () -> driverController.getHID().getRightStickButton()
         ));
 
         acquisition.setDefaultCommand(new DefaultAcquisition(acquisition, this::shouldAcquisitionRun));
@@ -76,19 +79,14 @@ public class RobotContainer {
     }
 
     private void configureDriverControllerBindings() {
-        new Button(driverController::getBackButton)
-                        .whenPressed(drives::zeroGyroscope);
+        driverController.a().onTrue(new InstantCommand(drives::zeroGyroscope));
         // new Button(driverController::getStartButton);
 
         // Colored buttons
-        new Button(driverController::getAButton)
-                .whenPressed(new ComplexShootBalls(shooter, index, acquisition, 2, kControl.SHOOTER_LOW_RPMS), false);
-        new Button(driverController::getBButton)
-                .whenPressed(new ComplexShootBalls(shooter, index, acquisition, 2, kControl.SHOOTER_HIGH_RPMS), false);
-        new Button(driverController::getXButton)
-                .whenPressed(new ComplexShootBalls(shooter, index, acquisition, 1, kControl.SHOOTER_LOW_RPMS), false);
-        new Button(driverController::getYButton);
-//                .whenPressed(new ComplexSpinUpShooter(shooter, acquisition, kControl.SHOOTER_HIGH_RPMS));
+        driverController.a().onTrue(new ComplexShootBalls(shooter, index, acquisition, 2, kControl.SHOOTER_LOW_RPMS));
+        driverController.b().onTrue(new ComplexShootBalls(shooter, index, acquisition, 2, kControl.SHOOTER_HIGH_RPMS));
+        driverController.x().onTrue(new ComplexShootBalls(shooter, index, acquisition, 1, kControl.SHOOTER_LOW_RPMS));
+        driverController.y().onTrue(new ComplexSpinUpShooter(shooter, acquisition, kControl.SHOOTER_HIGH_RPMS));
 
 
         // POV
@@ -98,12 +96,10 @@ public class RobotContainer {
         // new POVButton(driverController, 270);
 
         // Bumpers
-        new Button(driverController::getRightBumper)
-                .whenPressed(() -> acquisition.setRollerRPM(kControl.ACQUISITION_RPMS));
-        new Button(driverController::getLeftBumper)
-                .whenInactive(() -> {acquisition.setRollerRPM(0);
+        driverController.rightBumper().onTrue(new InstantCommand(() -> acquisition.setRollerRPM(kControl.ACQUISITION_RPMS)));
+        driverController.leftBumper().onTrue(new InstantCommand(() -> {acquisition.setRollerRPM(0);
                                      acquisition.retractArms();
-                                });
+                                }));
 
         // Joystick Buttons
         // new Button(driverController::getRightStickButton);
@@ -116,41 +112,30 @@ public class RobotContainer {
 
     private void configureOperatorControllerBindings() {
         // Start/Back
-        new Button(operatorController::getStartButton)
-                .whenPressed(climber::releaseLock);
-        new Button(operatorController::getBackButton)
-                .whenPressed(climber::extendBreak);
+        operatorController.start().onTrue(new InstantCommand(climber::releaseLock));
+        operatorController.back().onTrue(new InstantCommand(climber::extendBreak));
 
         // Colored buttons
-        new Button(operatorController::getAButton)
-                .whenPressed((new CommandAutoClimb(climber, drives, index, operatorController))
-                        .withInterrupt(() -> operatorController.getPOV() == 0)
+        operatorController.a().onTrue((new CommandAutoClimb(climber, drives, index, operatorController.getHID()))
+                        .until(() -> operatorController.getHID().getPOV() == 0)
                 );
-        new Button(operatorController::getBButton)
-                .whenPressed(new ComplexShootBalls(shooter, index, acquisition, 2, kControl.SHOOTER_HIGH_RPMS), false);
-        new Button(operatorController::getXButton)
-                .whenPressed(new ComplexShootBalls(shooter, index, acquisition, 2, kControl.SHOOTER_LOW_RPMS), false);
-        new Button(operatorController::getYButton)
-                .whenPressed(new CommandRunShooter(shooter, kControl.SHOOTER_HIGH_RPMS, true));
+        operatorController.b().onTrue(new ComplexShootBalls(shooter, index, acquisition, 2, kControl.SHOOTER_HIGH_RPMS));
+        operatorController.x().onTrue(new ComplexShootBalls(shooter, index, acquisition, 2, kControl.SHOOTER_LOW_RPMS));
+        operatorController.y().onTrue(new CommandRunShooter(shooter, kControl.SHOOTER_HIGH_RPMS, true));
 
         // POV
-        new POVButton(operatorController, 0)
-                .whenPressed(new CommandOnCancelClimb(climber, drives)); 
-        new POVButton(operatorController, 90)
-        .whenHeld(new InstantCommand(() -> climber.moveSidewaysPOut(-1)))
-        .whenReleased(new InstantCommand(() -> climber.moveSidewaysPOut(0)));
+        operatorController.pov(0).onTrue(new CommandOnCancelClimb(climber, drives)); 
+        operatorController.pov(90).onTrue(new InstantCommand(() -> climber.moveSidewaysPOut(-1)))
+        .onFalse(new InstantCommand(() -> climber.moveSidewaysPOut(0)));
         // new POVButton(operatorController, 180);
-        new POVButton(operatorController, 270)
-                .whenHeld(new InstantCommand(() -> climber.moveSidewaysPOut(1)))
-                .whenReleased(new InstantCommand(() -> climber.moveSidewaysPOut(0)));
+        operatorController.pov(270).whileTrue(new InstantCommand(() -> climber.moveSidewaysPOut(1)))
+                .onFalse(new InstantCommand(() -> climber.moveSidewaysPOut(0)));
 
         // Bumpers
-        new Button(operatorController::getRightBumper)
-                .whenPressed(() -> acquisition.setRollerRPM(kControl.ACQUISITION_RPMS));
-        new Button(operatorController::getLeftBumper)
-                .whenInactive(() -> {acquisition.setRollerRPM(0);
+        operatorController.rightBumper().onTrue(new InstantCommand(() -> acquisition.setRollerRPM(kControl.ACQUISITION_RPMS)));
+        operatorController.leftBumper().whileFalse(new InstantCommand(() -> {acquisition.setRollerRPM(0);
                                      acquisition.retractArms();
-                                });
+                                }));
 
         // Joystick Buttons
         // new Button(operatorController::getRightStickButton);
@@ -165,10 +150,10 @@ public class RobotContainer {
     }
 
     public void applyControllerRumble() {
-        driverController.setRumble(GenericHID.RumbleType.kLeftRumble, driverControllerLeftRumble.getCurrentRumble());
-        driverController.setRumble(GenericHID.RumbleType.kRightRumble, driverControllerRightRumble.getCurrentRumble());
-        operatorController.setRumble(GenericHID.RumbleType.kLeftRumble, operatorControllerLeftRumble.getCurrentRumble());
-        operatorController.setRumble(GenericHID.RumbleType.kRightRumble, operatorControllerRightRumble.getCurrentRumble());
+        driverController.getHID().setRumble(GenericHID.RumbleType.kLeftRumble, driverControllerLeftRumble.getCurrentRumble());
+        driverController.getHID().setRumble(GenericHID.RumbleType.kRightRumble, driverControllerRightRumble.getCurrentRumble());
+        operatorController.getHID().setRumble(GenericHID.RumbleType.kLeftRumble, operatorControllerLeftRumble.getCurrentRumble());
+        operatorController.getHID().setRumble(GenericHID.RumbleType.kRightRumble, operatorControllerRightRumble.getCurrentRumble());
     }
 
     public void resetSubsystems() {
