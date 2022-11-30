@@ -7,12 +7,6 @@ package frc.robot.subsystems.drives;
 import com.ctre.phoenix.sensors.Pigeon2;
 import com.ctre.phoenix.sensors.WPI_Pigeon2;
 
-import org.photonvision.PhotonUtils;
-
-import edu.wpi.first.math.MatBuilder;
-import edu.wpi.first.math.Nat;
-import edu.wpi.first.math.Num;
-import edu.wpi.first.math.estimator.SwerveDrivePoseEstimator;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Translation2d;
@@ -32,12 +26,7 @@ import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Robot;
 import frc.robot.constants.kCANIDs;
 import frc.robot.constants.kSwerve;
-import frc.robot.constants.kVision;
 import frc.robot.utils.PoseCamera;
-import edu.wpi.first.math.numbers.N1;
-import edu.wpi.first.math.numbers.N3;
-import edu.wpi.first.math.numbers.N4;
-import edu.wpi.first.math.numbers.N7;
 
 import static frc.robot.constants.kSwerve.CANIVORE_NAME;
 import static frc.robot.constants.kSwerve.DRIVETRAIN_TRACKWIDTH_METERS;
@@ -97,7 +86,7 @@ public class Drives extends SubsystemBase {
         //                         new MatBuilder<>(Nat.N7(), Nat.N1()).fill(0.02, 0.02, 0.01, 0.001,0.001,0.001,0.001), 
         //                         new MatBuilder<>(Nat.N3(), Nat.N1()).fill(0.1, 0.1, 0.01) 
         //                 );
-        odometry = new SwerveDriveOdometry(kinematics, new Rotation2d(0), getModulePositions(), new Pose2d(new Translation2d(0, 0), new Rotation2d(0)));
+        odometry = new SwerveDriveOdometry(kinematics, new Rotation2d(0), getRealPositions(), new Pose2d(new Translation2d(0, 0), new Rotation2d(0)));
 
         ShuffleboardTab tab = Shuffleboard.getTab("Drives");
 
@@ -118,15 +107,22 @@ public class Drives extends SubsystemBase {
         visionMeasure.addVisionTargetPose(0.5, 0.5);
     }
 
-    public SwerveModulePosition[] getModulePositions(){
-        SwerveModulePosition[] positions = new SwerveModulePosition[] {
-            modules[0].getPosition(),
-            modules[1].getPosition(),
-            modules[2].getPosition(),
-            modules[3].getPosition()
-        };
+    public SwerveModulePosition[] getRealPositions(){
+       SwerveModulePosition[] positions = new SwerveModulePosition[4];
+        for(SwerveModule module : modules) {
+            positions[module.moduleNumber] = module.getPosition();
+        }
         return positions;
     }
+
+    public SwerveModuleState[] getRealStates() {
+        SwerveModuleState[] states = new SwerveModuleState[4];
+        for(SwerveModule module : modules) {
+            states[module.moduleNumber] = module.getState();
+        }
+        return states;
+    }
+
     /**
      * Sets the gyroscope angle to zero. This can be used to set the direction the robot is currently facing to the
      * 'forwards' direction.
@@ -144,7 +140,7 @@ public class Drives extends SubsystemBase {
     }
 
     public void setOdometryPose(Pose2d pose) {
-        odometry.resetPosition(pose, pose.getRotation());
+        odometry.resetPosition(pose.getRotation(), getRealPositions(), getPose());
     }
 
     public Pose2d getPose() {
@@ -175,20 +171,12 @@ public class Drives extends SubsystemBase {
         return kinematics;
     }
 
-    public SwerveModuleState[] getRealStates() {
-        SwerveModuleState[] states = new SwerveModuleState[4];
-        for(SwerveModule module : modules) {
-            states[module.moduleNumber] = module.getState();
-        }
-        return states;
-    }
-
     @Override
     public void periodic() {
         if(pigeonTwo.getRotation2d().getDegrees() != lastPigeonRotation) pigeonLog.append(pigeonTwo.getRotation2d().getDegrees());
         lastPigeonRotation = pigeonTwo.getRotation2d().getDegrees();
 
-        odometry.update(pigeonTwo.getRotation2d(), getModulePositions());
+        odometry.update(pigeonTwo.getRotation2d(), getRealPositions());
         // odometry.addVisionMeasurement(visionMeasure.getVisionPose(odometry.getPoseMeters()), visionMeasure.getTimestamp());
         
         SmartDashboard.putNumber("odometry.getEstimatedPositionX", odometry.getPoseMeters().getX());
@@ -196,9 +184,11 @@ public class Drives extends SubsystemBase {
         var pose = getPose();
         field.setRobotPose(pose);
         var target = visionMeasure.getObject(0);
+        /*
         if(target != null){
             double distance = pose.getTranslation().getDistance(target);
-            // SmartDashboard.putNumber("distanceToTarget", distance);
+            SmartDashboard.putNumber("distanceToTarget", distance);
         }
+         */
     }
 }
