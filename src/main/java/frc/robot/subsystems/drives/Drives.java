@@ -6,7 +6,6 @@ package frc.robot.subsystems.drives;
 
 import com.ctre.phoenix.sensors.Pigeon2;
 import com.ctre.phoenix.sensors.WPI_Pigeon2;
-
 import com.pathplanner.lib.PathPlanner;
 import com.pathplanner.lib.PathPlannerTrajectory;
 import edu.wpi.first.math.geometry.Pose2d;
@@ -24,7 +23,9 @@ import edu.wpi.first.wpilibj.shuffleboard.ShuffleboardLayout;
 import edu.wpi.first.wpilibj.shuffleboard.ShuffleboardTab;
 import edu.wpi.first.wpilibj.smartdashboard.Field2d;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
-import edu.wpi.first.wpilibj2.command.*;
+import edu.wpi.first.wpilibj2.command.Command;
+import edu.wpi.first.wpilibj2.command.Commands;
+import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Robot;
 import frc.robot.constants.kAuto;
 import frc.robot.constants.kCANIDs;
@@ -32,15 +33,7 @@ import frc.robot.constants.kSwerve;
 import frc.robot.utils.MCQSwerveControllerCommand;
 import frc.robot.utils.PoseCamera;
 
-import static frc.robot.constants.kSwerve.CANIVORE_NAME;
-import static frc.robot.constants.kSwerve.DRIVETRAIN_TRACKWIDTH_METERS;
-import static frc.robot.constants.kSwerve.DRIVETRAIN_WHEELBASE_METERS;
-import static frc.robot.constants.kSwerve.FRONT_LEFT_MODULE_STEER_OFFSET;
-import static frc.robot.constants.kSwerve.FRONT_RIGHT_MODULE_STEER_OFFSET;
-import static frc.robot.constants.kSwerve.MAX_VELOCITY_METERS_PER_SECOND;
-import static frc.robot.constants.kSwerve.REAR_LEFT_MODULE_STEER_OFFSET;
-import static frc.robot.constants.kSwerve.REAR_RIGHT_MODULE_STEER_OFFSET;
-import static frc.robot.constants.kAuto.Routine;
+import static frc.robot.constants.kSwerve.*;
 
 public class Drives extends SubsystemBase {
     private boolean runDrive = true;
@@ -139,7 +132,7 @@ public class Drives extends SubsystemBase {
                         this::updateModules,
                         this
                 )
-        );
+        ).withName("AutonomousCommand/" + pathName);
     }
 
     /**
@@ -148,7 +141,7 @@ public class Drives extends SubsystemBase {
      * @return Command that zeros the gyroscope
      */
     public Command commandZeroGyroscope() {
-        return Commands.runOnce(this::zeroGyroscope, this);
+        return Commands.runOnce(this::zeroGyroscope, this).withName("ZeroGyroscope");
     }
 
     /**

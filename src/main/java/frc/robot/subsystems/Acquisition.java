@@ -6,7 +6,6 @@ import com.revrobotics.CANSparkMax.IdleMode;
 import com.revrobotics.CANSparkMaxLowLevel.MotorType;
 import com.revrobotics.RelativeEncoder;
 import com.revrobotics.SparkMaxPIDController;
-
 import edu.wpi.first.util.datalog.DataLog;
 import edu.wpi.first.util.datalog.DoubleLogEntry;
 import edu.wpi.first.wpilibj.PneumaticsModuleType;
@@ -57,18 +56,18 @@ public class Acquisition extends SubsystemBase {
   }
 
   public Command commandRunAcquisition() {
-    return Commands.runOnce(() -> setRollerRPM(kControl.ACQUISITION_RPMS), this);
+    return Commands.runOnce(() -> setRollerRPM(kControl.ACQUISITION_RPMS), this).withName("RunAcquisition");
   }
 
-  public Command commandExtendArms(){
-    return Commands.runOnce(() -> arms.set(true), this);
+  public Command commandExtendArms() {
+    return Commands.runOnce(() -> arms.set(true), this).withName("ExtendArms");
   }
 
   public Command commandRetractArms(){
     return Commands.runOnce(() -> {
       arms.set(false);
       setpointRPM = 0;
-    }, this);
+    }, this).withName("RetractArms");
   }
 
   public void extendArms() {

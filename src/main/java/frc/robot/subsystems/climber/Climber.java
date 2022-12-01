@@ -41,11 +41,11 @@ public class Climber extends SubsystemBase {
     }
 
     public Command commandReleaseLock(){
-        return Commands.runOnce(this::releaseLock, this);
+        return Commands.runOnce(this::releaseLock, this).withName("ReleaseClimbLock");
     }
 
     public Command commandExtendLock(){
-        return Commands.runOnce(this::extendLock, this);
+        return Commands.runOnce(this::extendLock, this).withName("ExtendClimbLock");
     }
 
     public void setToCoast(){
