@@ -13,9 +13,12 @@ import edu.wpi.first.wpilibj.PneumaticsModuleType;
 import edu.wpi.first.wpilibj.Solenoid;
 import edu.wpi.first.wpilibj.shuffleboard.Shuffleboard;
 import edu.wpi.first.wpilibj.shuffleboard.ShuffleboardTab;
+import edu.wpi.first.wpilibj2.command.Command;
+import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Robot;
 import frc.robot.constants.kCANIDs;
+import frc.robot.constants.kControl;
 import frc.robot.constants.kPneumatics;
 
 
@@ -53,13 +56,23 @@ public class Acquisition extends SubsystemBase {
     armsAmperageLog = new DoubleLogEntry(log, "Acq/Roller-Amps");
   }
 
-  public void extendArms(){
-    arms.set(true);
+  public Command commandRunAcquisition() {
+    return Commands.runOnce(() -> setRollerRPM(kControl.ACQUISITION_RPMS), this);
   }
 
-  public void retractArms(){
-    arms.set(false);
-    setpointRPM = 0;
+  public Command commandExtendArms(){
+    return Commands.runOnce(() -> arms.set(true), this);
+  }
+
+  public Command commandRetractArms(){
+    return Commands.runOnce(() -> {
+      arms.set(false);
+      setpointRPM = 0;
+    }, this);
+  }
+
+  public void extendArms() {
+    arms.set(true);
   }
 
   public boolean areArmsExtended(){

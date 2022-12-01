@@ -95,10 +95,8 @@ public class RobotContainer {
         // new POVButton(driverController, 270);
 
         // Bumpers
-        driverController.rightBumper().onTrue(new InstantCommand(() -> acquisition.setRollerRPM(kControl.ACQUISITION_RPMS)));
-        driverController.leftBumper().onTrue(new InstantCommand(() -> {acquisition.setRollerRPM(0);
-                                     acquisition.retractArms();
-                                }));
+        driverController.rightBumper().onTrue(acquisition.commandRunAcquisition());
+        driverController.leftBumper().onTrue(acquisition.commandRetractArms());
 
         // Joystick Buttons
         // new Button(driverController::getRightStickButton);
@@ -131,10 +129,8 @@ public class RobotContainer {
                 .onFalse(new InstantCommand(() -> climber.moveSidewaysPOut(0)));
 
         // Bumpers
-        operatorController.rightBumper().onTrue(new InstantCommand(() -> acquisition.setRollerRPM(kControl.ACQUISITION_RPMS)));
-        operatorController.leftBumper().whileFalse(new InstantCommand(() -> {acquisition.setRollerRPM(0);
-                                     acquisition.retractArms();
-                                }));
+        operatorController.rightBumper().onTrue(acquisition.commandRunAcquisition());
+        operatorController.leftBumper().whileFalse(acquisition.commandRetractArms());
 
         // Joystick Buttons
         // new Button(operatorController::getRightStickButton);
@@ -188,7 +184,7 @@ public class RobotContainer {
         switch (routine) {
             case HANGAR_TWO_BALL:
                 Commands.sequence(
-                        Commands.run(() -> acquisition.setRollerRPM(kControl.ACQUISITION_RPMS)),
+                        acquisition.commandRunAcquisition(),
                         drives.runAutoPath("Hangar-Two-Ball-1"),
                         Commands.wait(1.0),
                         new ComplexShootBalls(shooter, index, acquisition, 3, kControl.SHOOTER_AUTO_RPMS),
@@ -197,7 +193,7 @@ public class RobotContainer {
                 break;
             case TERMINAL_TWO_BALL:
                 Commands.sequence(
-                        Commands.run(() -> acquisition.setRollerRPM(kControl.ACQUISITION_RPMS)),
+                        acquisition.commandRunAcquisition(),
                         drives.runAutoPath("Terminal-Two-Ball-1"),
                         Commands.wait(1.0),
                         new ComplexShootBalls(shooter, index, acquisition, 3, kControl.SHOOTER_AUTO_RPMS),
