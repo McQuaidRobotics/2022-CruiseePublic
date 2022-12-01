@@ -14,9 +14,6 @@ import frc.robot.subsystems.Index;
 import frc.robot.subsystems.Shooter;
 import frc.robot.subsystems.Shooter.ShooterRPMS;
 
-// NOTE:  Consider using this command inline, rather than writing a subclass.  For more
-// information, see:
-// https://docs.wpilib.org/en/stable/docs/software/commandbased/convenience-features.html
 public class ShooterCommands {
   public static Command complexShootBalls(Shooter shooter, Index index, Acquisition acquisition, int balls, ShooterRPMS rpms) {
     return Commands.sequence(

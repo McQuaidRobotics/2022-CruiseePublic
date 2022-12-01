@@ -10,7 +10,7 @@ import edu.wpi.first.wpilibj2.command.ParallelCommandGroup;
 import edu.wpi.first.wpilibj2.command.SequentialCommandGroup;
 import frc.robot.Robot;
 import frc.robot.commands.climber.CommandMoveAngle.CurrentLimitType;
-import frc.robot.commands.utils.CommandWaitForButton;
+import frc.robot.commands.utils.UtilCommands;
 import frc.robot.constants.kClimb;
 import frc.robot.constants.kLED;
 import frc.robot.subsystems.Index;
@@ -29,14 +29,14 @@ public class CommandAutoClimb extends SequentialCommandGroup {
         new CommandMoveAngle(climber.innerArm, -26, CurrentLimitType.OFF, kClimb.CLIMB_ANGLE_ALLOWED_ERROR_GENERAL),
         new CommandMoveReach(climber.outerArm, kClimb.CLIMB_MAX_EXTEND-2, true)
       ),
-      new CommandWaitForButton(gamepad, kClimb.CLIMB_BUTTON),
+      UtilCommands.commandWaitForButton(gamepad, kClimb.CLIMB_BUTTON),
       new InstantCommand(() -> drives.setRunDrives(false)),
       new ParallelCommandGroup(
         new CommandMoveReach(climber.outerArm, kClimb.CLIMB_MIN_EXTEND, true),
         new CommandMoveAngle(climber.outerArm, 7, CurrentLimitType.OFF, kClimb.CLIMB_ANGLE_ALLOWED_ERROR_GENERAL)
       ),
       new InstantCommand(() -> Robot.setLED(kLED.CLIMB_FIRST_BAR)),
-      new CommandWaitForButton(gamepad, kClimb.CLIMB_BUTTON),
+      UtilCommands.commandWaitForButton(gamepad, kClimb.CLIMB_BUTTON),
       
       new CommandMoveReach(climber.innerArm, kClimb.CLIMB_MAX_EXTEND, true, kClimb.INNER_NOLOAD_STALL_CURRENT_REACH),
       // new CommandWaitForButton(gamepad, kClimb.CLIMB_BUTTON),
