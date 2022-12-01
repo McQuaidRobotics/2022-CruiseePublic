@@ -7,14 +7,11 @@ package frc.robot;
 import edu.wpi.first.wpilibj.GenericHID;
 import edu.wpi.first.wpilibj.PneumaticHub;
 import edu.wpi.first.wpilibj.PowerDistribution;
-import edu.wpi.first.wpilibj.XboxController;
+import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.SequentialCommandGroup;
 import edu.wpi.first.wpilibj2.command.WaitCommand;
-import edu.wpi.first.wpilibj2.command.button.Button;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
-import edu.wpi.first.wpilibj2.command.button.POVButton;
-import edu.wpi.first.wpilibj2.command.button.Trigger;
 import frc.robot.commands.acquisition.DefaultAcquisition;
 import frc.robot.commands.climber.CommandAutoClimb;
 import frc.robot.commands.climber.CommandOnCancelClimb;
@@ -24,6 +21,7 @@ import frc.robot.commands.index.DefaultIndex;
 import frc.robot.commands.shooter.CommandRunShooter;
 import frc.robot.commands.shooter.ComplexShootBalls;
 import frc.robot.commands.shooter.ComplexSpinUpShooter;
+import frc.robot.constants.kAuto;
 import frc.robot.constants.kCANIDs;
 import frc.robot.constants.kControl;
 import frc.robot.constants.kSwerve;
@@ -33,8 +31,9 @@ import frc.robot.subsystems.LED;
 import frc.robot.subsystems.Shooter;
 import frc.robot.subsystems.climber.Climber;
 import frc.robot.subsystems.drives.Drives;
-import frc.robot.utils.AutoUtil;
 import frc.robot.utils.ControllerRumble;
+
+import static frc.robot.constants.kAuto.Routine.*;
 
 public class RobotContainer {
     public final PowerDistribution pdp = new PowerDistribution(kCANIDs.PDP, PowerDistribution.ModuleType.kRev);
@@ -185,42 +184,42 @@ public class RobotContainer {
         return computedValue;
     }
 
-    public void runAutonomousRoutine(AutoUtil.Routine routine) {
+    public void runAutonomousRoutine(kAuto.Routine routine) {
         switch (routine) {
             case HANGAR_TWO_BALL:
-                new SequentialCommandGroup(
-                        new InstantCommand(() -> acquisition.setRollerRPM(kControl.ACQUISITION_RPMS)),
-                        AutoUtil.generateCommand("Hangar-Two-Ball-1", drives),
-                        new WaitCommand(1),
+                Commands.sequence(
+                        Commands.run(() -> acquisition.setRollerRPM(kControl.ACQUISITION_RPMS)),
+                        drives.runAutoPath("Hangar-Two-Ball-1"),
+                        Commands.wait(1.0),
                         new ComplexShootBalls(shooter, index, acquisition, 3, kControl.SHOOTER_AUTO_RPMS),
-                        AutoUtil.generateCommand("Hangar-Two-Ball-2", drives)
+                        drives.runAutoPath("Hangar-Two-Ball-2")
                 ).schedule();
                 break;
             case TERMINAL_TWO_BALL:
-                new SequentialCommandGroup(
-                        new InstantCommand(() -> acquisition.setRollerRPM(kControl.ACQUISITION_RPMS)),
-                        AutoUtil.generateCommand("Terminal-Two-Ball-1", drives),
-                        new WaitCommand(1),
+                Commands.sequence(
+                        Commands.run(() -> acquisition.setRollerRPM(kControl.ACQUISITION_RPMS)),
+                        drives.runAutoPath("Terminal-Two-Ball-1"),
+                        Commands.wait(1.0),
                         new ComplexShootBalls(shooter, index, acquisition, 3, kControl.SHOOTER_AUTO_RPMS),
-                        AutoUtil.generateCommand("Terminal-Two-Ball-2", drives)
+                        drives.runAutoPath("Terminal-Two-Ball-2")
                 ).schedule();
                 break;
             case POTATO:
-                new SequentialCommandGroup(
+                Commands.sequence(
                         new ComplexShootBalls(shooter, index, acquisition, 2, kControl.SHOOTER_AUTO_RPMS),
-                        AutoUtil.generateCommand("Potato", drives)
+                        drives.runAutoPath("Potato")
                 ).schedule();
                 break;
             case NOTHING:
                 return;
             case DEFAULT:
-                new SequentialCommandGroup(
-                        AutoUtil.generateCommand("Default", drives)
+                Commands.sequence(
+                        drives.runAutoPath("Default")
                 ).schedule();
                 break;
             case TEST:
-                new SequentialCommandGroup(
-                        AutoUtil.generateCommand("Forward_4_Meters_90_Turn", drives)
+                Commands.sequence(
+                        drives.runAutoPath("Forward_4_Meters_90_Turn")
                 ).schedule();
                 break;
         }

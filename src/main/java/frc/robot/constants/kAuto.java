@@ -18,4 +18,13 @@ public class kAuto {
 
     public static final PIDController X_PID_CONTROLLER = new PIDController(XY_P, 0, 0);
     public static final PIDController Y_PID_CONTROLLER = new PIDController(XY_P, 0, 0);
+
+    public enum Routine {
+        HANGAR_TWO_BALL,
+        TERMINAL_TWO_BALL,
+        POTATO,
+        NOTHING,
+        DEFAULT,
+        TEST
+    }
 }

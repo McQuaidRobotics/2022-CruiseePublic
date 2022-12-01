@@ -12,15 +12,15 @@ import edu.wpi.first.wpilibj.TimedRobot;
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
+import frc.robot.constants.kAuto;
 import frc.robot.constants.kLED;
-import frc.robot.utils.AutoUtil;
 
 public class Robot extends TimedRobot {
     private static RobotContainer robotContainer;
 
     private static DataLog dataLog;
 
-    private final SendableChooser<AutoUtil.Routine> autoChooser = new SendableChooser<>();
+    private final SendableChooser<kAuto.Routine> autoChooser = new SendableChooser<>();
 
     @Override
     public void robotInit() {
@@ -30,8 +30,8 @@ public class Robot extends TimedRobot {
 
         robotContainer = new RobotContainer();
 
-        AutoUtil.Routine[] routines = AutoUtil.Routine.values();
-        for (AutoUtil.Routine routine : routines) {
+        kAuto.Routine[] routines = kAuto.Routine.values();
+        for (kAuto.Routine routine : routines) {
             switch(routine.name()) {
                 case "DEFAULT":
                     autoChooser.setDefaultOption(routine.name(), routine);
@@ -62,8 +62,8 @@ public class Robot extends TimedRobot {
         robotContainer.setLEDs(kLED.AUTONOMOUS_ENABLED);
         robotContainer.resetSubsystems();
 
-        AutoUtil.Routine chosenAuto = autoChooser.getSelected();
-        if(chosenAuto == null) chosenAuto = AutoUtil.Routine.POTATO;
+        kAuto.Routine chosenAuto = autoChooser.getSelected();
+        if(chosenAuto == null) chosenAuto = kAuto.Routine.POTATO;
         robotContainer.runAutonomousRoutine(chosenAuto);
     }
 

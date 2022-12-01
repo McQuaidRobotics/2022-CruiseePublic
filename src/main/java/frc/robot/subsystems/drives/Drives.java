@@ -7,6 +7,8 @@ package frc.robot.subsystems.drives;
 import com.ctre.phoenix.sensors.Pigeon2;
 import com.ctre.phoenix.sensors.WPI_Pigeon2;
 
+import com.pathplanner.lib.PathPlanner;
+import com.pathplanner.lib.PathPlannerTrajectory;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Translation2d;
@@ -22,10 +24,12 @@ import edu.wpi.first.wpilibj.shuffleboard.ShuffleboardLayout;
 import edu.wpi.first.wpilibj.shuffleboard.ShuffleboardTab;
 import edu.wpi.first.wpilibj.smartdashboard.Field2d;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
-import edu.wpi.first.wpilibj2.command.SubsystemBase;
+import edu.wpi.first.wpilibj2.command.*;
 import frc.robot.Robot;
+import frc.robot.constants.kAuto;
 import frc.robot.constants.kCANIDs;
 import frc.robot.constants.kSwerve;
+import frc.robot.utils.MCQSwerveControllerCommand;
 import frc.robot.utils.PoseCamera;
 
 import static frc.robot.constants.kSwerve.CANIVORE_NAME;
@@ -36,6 +40,7 @@ import static frc.robot.constants.kSwerve.FRONT_RIGHT_MODULE_STEER_OFFSET;
 import static frc.robot.constants.kSwerve.MAX_VELOCITY_METERS_PER_SECOND;
 import static frc.robot.constants.kSwerve.REAR_LEFT_MODULE_STEER_OFFSET;
 import static frc.robot.constants.kSwerve.REAR_RIGHT_MODULE_STEER_OFFSET;
+import static frc.robot.constants.kAuto.Routine;
 
 public class Drives extends SubsystemBase {
     private boolean runDrive = true;
@@ -65,7 +70,6 @@ public class Drives extends SubsystemBase {
     public Drives() {
         pigeonTwo.configFactoryDefault();
         pigeonTwo.reset();
-        
 
         SmartDashboard.putData("Field", field);
 
@@ -103,10 +107,46 @@ public class Drives extends SubsystemBase {
         DataLog log = Robot.getDataLog();
         pigeonLog = new DoubleLogEntry(log, "Drives/pigeonRot");
 
-        
         visionMeasure.addVisionTargetPose(0.5, 0.5);
     }
 
+    /**
+     * Run an auto path from the available PathPlanner paths.
+     *
+     * @param pathName Name of path in PathPlanner
+     * @return
+     */
+    public Command runAutoPath(String pathName) {
+        PathPlannerTrajectory path = PathPlanner.loadPath(pathName, kSwerve.MAX_VELOCITY_METERS_PER_SECOND, kSwerve.MAX_ACCELERATION);
+
+        PathPlannerTrajectory.PathPlannerState initialState = path.getInitialState();
+        Pose2d startingPose = new Pose2d(initialState.poseMeters.getTranslation(), initialState.holonomicRotation);
+
+        return Commands.sequence(
+                Commands.run(() -> {
+                    field.getObject("traj").setTrajectory(path);
+                    field.getObject("beginpos").setPose(path.getInitialState().poseMeters);
+                    field.getObject("endpos").setPose(path.getEndState().poseMeters);
+                }),
+                Commands.run(() -> setOdometryPose(startingPose)),
+                new MCQSwerveControllerCommand(
+                        path,
+                        this::getPose,
+                        getKinematics(),
+                        kAuto.X_PID_CONTROLLER,
+                        kAuto.Y_PID_CONTROLLER,
+                        kAuto.THETA_AUTO_PID,
+                        this::updateModules,
+                        this
+                )
+        );
+    }
+
+    /**
+     * Gets the current positions of swerve modules.
+     *
+     * @return Array of swerve module positions.
+     */
     public SwerveModulePosition[] getRealPositions(){
        SwerveModulePosition[] positions = new SwerveModulePosition[4];
         for(SwerveModule module : modules) {
@@ -115,6 +155,11 @@ public class Drives extends SubsystemBase {
         return positions;
     }
 
+    /**
+     * Gets the current states of the modules (vectors).
+     *
+     * @return Array of swerve module states
+     */
     public SwerveModuleState[] getRealStates() {
         SwerveModuleState[] states = new SwerveModuleState[4];
         for(SwerveModule module : modules) {
@@ -139,14 +184,29 @@ public class Drives extends SubsystemBase {
         return odometry.getPoseMeters().getRotation();
     }
 
+    /**
+     * Sets the current pose of the odometry.
+     *
+     * @param pose New pose.
+     */
     public void setOdometryPose(Pose2d pose) {
         odometry.resetPosition(pose.getRotation(), getRealPositions(), getPose());
     }
 
+    /**
+     * Get the current odometry pose
+     *
+     * @return Current odometry pose
+     */
     public Pose2d getPose() {
         return odometry.getPoseMeters();
     }
 
+    /**
+     * Update the modules with a new set of SwerveModuleStates
+     *
+     * @param newStates The states to set the modules to.
+     */
     public void updateModules(SwerveModuleState[] newStates){
         SwerveDriveKinematics.desaturateWheelSpeeds(newStates, MAX_VELOCITY_METERS_PER_SECOND);
 
