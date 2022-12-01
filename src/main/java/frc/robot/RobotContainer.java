@@ -8,7 +8,6 @@ import edu.wpi.first.wpilibj.GenericHID;
 import edu.wpi.first.wpilibj.PneumaticHub;
 import edu.wpi.first.wpilibj.PowerDistribution;
 import edu.wpi.first.wpilibj2.command.Commands;
-import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import frc.robot.commands.acquisition.DefaultAcquisition;
 import frc.robot.commands.climber.CommandAutoClimb;
@@ -16,9 +15,7 @@ import frc.robot.commands.climber.CommandOnCancelClimb;
 import frc.robot.commands.climber.DefaultClimber;
 import frc.robot.commands.drives.DefaultDriveCommand;
 import frc.robot.commands.index.DefaultIndex;
-import frc.robot.commands.shooter.CommandRunShooter;
-import frc.robot.commands.shooter.ComplexShootBalls;
-import frc.robot.commands.shooter.ComplexSpinUpShooter;
+import frc.robot.commands.shooter.ShooterCommands;
 import frc.robot.constants.kAuto;
 import frc.robot.constants.kCANIDs;
 import frc.robot.constants.kControl;
@@ -78,10 +75,10 @@ public class RobotContainer {
         // new Button(driverController::getStartButton);
 
         // Colored buttons
-        driverController.a().onTrue(new ComplexShootBalls(shooter, index, acquisition, 2, kControl.SHOOTER_LOW_RPMS));
-        driverController.b().onTrue(new ComplexShootBalls(shooter, index, acquisition, 2, kControl.SHOOTER_HIGH_RPMS));
-        driverController.x().onTrue(new ComplexShootBalls(shooter, index, acquisition, 1, kControl.SHOOTER_LOW_RPMS));
-        driverController.y().onTrue(new ComplexSpinUpShooter(shooter, acquisition, kControl.SHOOTER_HIGH_RPMS));
+        driverController.a().onTrue(ShooterCommands.complexShootBalls(shooter, index, acquisition, 2, kControl.SHOOTER_LOW_RPMS));
+        driverController.b().onTrue(ShooterCommands.complexShootBalls(shooter, index, acquisition, 2, kControl.SHOOTER_HIGH_RPMS));
+        driverController.x().onTrue(ShooterCommands.complexShootBalls(shooter, index, acquisition, 1, kControl.SHOOTER_LOW_RPMS));
+        driverController.y().onTrue(ShooterCommands.complexSpinUpShooter(shooter, acquisition, kControl.SHOOTER_HIGH_RPMS));
 
 
         // POV
@@ -112,9 +109,9 @@ public class RobotContainer {
         operatorController.a().onTrue((new CommandAutoClimb(climber, drives, index, operatorController.getHID()))
                         .until(() -> operatorController.getHID().getPOV() == 0)
                 );
-        operatorController.b().onTrue(new ComplexShootBalls(shooter, index, acquisition, 2, kControl.SHOOTER_HIGH_RPMS));
-        operatorController.x().onTrue(new ComplexShootBalls(shooter, index, acquisition, 2, kControl.SHOOTER_LOW_RPMS));
-        operatorController.y().onTrue(new CommandRunShooter(shooter, kControl.SHOOTER_HIGH_RPMS, true));
+        operatorController.b().onTrue(ShooterCommands.complexShootBalls(shooter, index, acquisition, 2, kControl.SHOOTER_HIGH_RPMS));
+        operatorController.x().onTrue(ShooterCommands.complexShootBalls(shooter, index, acquisition, 2, kControl.SHOOTER_LOW_RPMS));
+        operatorController.y().onTrue(ShooterCommands.complexSpinUpShooter(shooter, acquisition, kControl.SHOOTER_HIGH_RPMS));
 
         // POV
         operatorController.pov(0).onTrue(new CommandOnCancelClimb(climber, drives)); 
@@ -181,7 +178,7 @@ public class RobotContainer {
                         acquisition.commandRunAcquisition(),
                         drives.runAutoPath("Hangar-Two-Ball-1"),
                         Commands.wait(1.0),
-                        new ComplexShootBalls(shooter, index, acquisition, 3, kControl.SHOOTER_AUTO_RPMS),
+                        ShooterCommands.complexShootBalls(shooter, index, acquisition, 3, kControl.SHOOTER_AUTO_RPMS),
                         drives.runAutoPath("Hangar-Two-Ball-2")
                 ).schedule();
                 break;
@@ -190,13 +187,13 @@ public class RobotContainer {
                         acquisition.commandRunAcquisition(),
                         drives.runAutoPath("Terminal-Two-Ball-1"),
                         Commands.wait(1.0),
-                        new ComplexShootBalls(shooter, index, acquisition, 3, kControl.SHOOTER_AUTO_RPMS),
+                        ShooterCommands.complexShootBalls(shooter, index, acquisition, 3, kControl.SHOOTER_AUTO_RPMS),
                         drives.runAutoPath("Terminal-Two-Ball-2")
                 ).schedule();
                 break;
             case POTATO:
                 Commands.sequence(
-                        new ComplexShootBalls(shooter, index, acquisition, 2, kControl.SHOOTER_AUTO_RPMS),
+                        ShooterCommands.complexShootBalls(shooter, index, acquisition, 2, kControl.SHOOTER_AUTO_RPMS),
                         drives.runAutoPath("Potato")
                 ).schedule();
                 break;

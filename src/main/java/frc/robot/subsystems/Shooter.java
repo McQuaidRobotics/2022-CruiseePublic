@@ -8,13 +8,14 @@ import com.revrobotics.CANSparkMax;
 import com.revrobotics.CANSparkMax.IdleMode;
 import com.revrobotics.CANSparkMaxLowLevel.MotorType;
 import com.revrobotics.RelativeEncoder;
-
 import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.math.controller.SimpleMotorFeedforward;
 import edu.wpi.first.util.datalog.DataLog;
 import edu.wpi.first.util.datalog.DoubleLogEntry;
 import edu.wpi.first.wpilibj.shuffleboard.Shuffleboard;
 import edu.wpi.first.wpilibj.shuffleboard.ShuffleboardTab;
+import edu.wpi.first.wpilibj2.command.Command;
+import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Robot;
 import frc.robot.constants.kCANIDs;
@@ -66,6 +67,28 @@ public class Shooter extends SubsystemBase {
     DataLog log = Robot.getDataLog();
     shooterFrontAmpsLog = new DoubleLogEntry(log, "Shooter/Front-Amps");
     shooterBackAmpsLog = new DoubleLogEntry(log, "Shooter/Back-Amps");
+  }
+
+  public Command commandRunShooter(ShooterRPMS rpms, boolean isInstant) {
+    return Commands.startEnd(
+            () -> {
+              setVelocityFront(rpms.RPMFront);
+              setVelocityBack(rpms.RPMBack);
+            },
+            () -> {},
+            this
+    ).until(
+            () -> (Math.abs(getVelocityFront() - (rpms.RPMFront / kControl.SHOOTER_FRONT_GEAR_RATIO)) < 50 && Math.abs(getVelocityBack() - rpms.RPMBack) < 50) || isInstant
+    );
+  }
+
+  public Command commandStopShooter() {
+    return Commands.runOnce(
+            () -> {
+              setVelocityFront(0);
+              setVelocityBack(0);
+            }
+    );
   }
 
   /**

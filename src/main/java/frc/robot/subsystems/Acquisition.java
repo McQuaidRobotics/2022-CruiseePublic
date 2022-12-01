@@ -59,6 +59,10 @@ public class Acquisition extends SubsystemBase {
     return Commands.runOnce(() -> setRollerRPM(kControl.ACQUISITION_RPMS), this).withName("RunAcquisition");
   }
 
+  public Command commandStopAcquisition() {
+    return Commands.runOnce(() -> setRollerRPM(0), this).withName("StopAcquisition");
+  }
+
   public Command commandExtendArms() {
     return Commands.runOnce(() -> arms.set(true), this).withName("ExtendArms");
   }
