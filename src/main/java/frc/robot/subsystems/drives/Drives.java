@@ -114,7 +114,7 @@ public class Drives extends SubsystemBase {
      * Run an auto path from the available PathPlanner paths.
      *
      * @param pathName Name of path in PathPlanner
-     * @return
+     * @return Command that runs an autonomous path
      */
     public Command runAutoPath(String pathName) {
         PathPlannerTrajectory path = PathPlanner.loadPath(pathName, kSwerve.MAX_VELOCITY_METERS_PER_SECOND, kSwerve.MAX_ACCELERATION);
@@ -140,6 +140,15 @@ public class Drives extends SubsystemBase {
                         this
                 )
         );
+    }
+
+    /**
+     * Zero the gyro.
+     *
+     * @return Command that zeros the gyroscope
+     */
+    public Command commandZeroGyroscope() {
+        return Commands.runOnce(this::zeroGyroscope, this);
     }
 
     /**
@@ -221,10 +230,6 @@ public class Drives extends SubsystemBase {
 
     public boolean getRunDrives(){
         return runDrive;
-    }
-
-    public Field2d getField() {
-        return field;
     }
 
     public SwerveDriveKinematics getKinematics() {

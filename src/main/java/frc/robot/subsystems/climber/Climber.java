@@ -10,6 +10,8 @@ import edu.wpi.first.wpilibj.DoubleSolenoid;
 import edu.wpi.first.wpilibj.DoubleSolenoid.Value;
 import edu.wpi.first.wpilibj.PneumaticsModuleType;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
+import edu.wpi.first.wpilibj2.command.Command;
+import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.constants.kCANIDs;
 import frc.robot.constants.kClimb;
@@ -28,6 +30,22 @@ public class Climber extends SubsystemBase {
         outerArm = new ClimberArm(kCANIDs.OUTER_ANGLE,kCANIDs.OUTER_REACH, 
                     kClimb.climbAngleOuter, kClimb.climbReachOuter, true);
         sidewaysMover = new CANSparkMax(kCANIDs.SIDEWAYS_MOVER, MotorType.kBrushless);
+    }
+
+    public Command commandRunSidewaysMover(double speed) {
+        return Commands.startEnd(
+                () -> moveSidewaysPOut(speed),
+                () -> moveSidewaysPOut(0),
+                this
+        );
+    }
+
+    public Command commandReleaseLock(){
+        return Commands.runOnce(this::releaseLock, this);
+    }
+
+    public Command commandExtendLock(){
+        return Commands.runOnce(this::extendLock, this);
     }
 
     public void setToCoast(){
@@ -80,7 +98,7 @@ public class Climber extends SubsystemBase {
         lock.set(Value.kReverse);
     }
 
-    public void extendBreak(){
+    public void extendLock(){
         lock.set(Value.kForward);
     }
 

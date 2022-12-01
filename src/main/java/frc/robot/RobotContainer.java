@@ -9,8 +9,6 @@ import edu.wpi.first.wpilibj.PneumaticHub;
 import edu.wpi.first.wpilibj.PowerDistribution;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
-import edu.wpi.first.wpilibj2.command.SequentialCommandGroup;
-import edu.wpi.first.wpilibj2.command.WaitCommand;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import frc.robot.commands.acquisition.DefaultAcquisition;
 import frc.robot.commands.climber.CommandAutoClimb;
@@ -32,8 +30,6 @@ import frc.robot.subsystems.Shooter;
 import frc.robot.subsystems.climber.Climber;
 import frc.robot.subsystems.drives.Drives;
 import frc.robot.utils.ControllerRumble;
-
-import static frc.robot.constants.kAuto.Routine.*;
 
 public class RobotContainer {
     public final PowerDistribution pdp = new PowerDistribution(kCANIDs.PDP, PowerDistribution.ModuleType.kRev);
@@ -70,7 +66,7 @@ public class RobotContainer {
                 () -> 0 * -operatorController.getRightY() * 0.4,
                 () -> 0 * operatorController.getRightX() * 0.4,
                 () -> 0 * -operatorController.getLeftY() * 0.4,
-                () -> 0 * operatorController.getLeftX() * 0.4 // CURRENTLY DISABLED
+                () -> 0 * operatorController.getLeftX() * 0.4
         ));
 
         configureDriverControllerBindings();
@@ -78,7 +74,7 @@ public class RobotContainer {
     }
 
     private void configureDriverControllerBindings() {
-        driverController.a().onTrue(new InstantCommand(drives::zeroGyroscope));
+        driverController.a().onTrue(drives.commandZeroGyroscope());
         // new Button(driverController::getStartButton);
 
         // Colored buttons
@@ -109,8 +105,8 @@ public class RobotContainer {
 
     private void configureOperatorControllerBindings() {
         // Start/Back
-        operatorController.start().onTrue(new InstantCommand(climber::releaseLock));
-        operatorController.back().onTrue(new InstantCommand(climber::extendBreak));
+        operatorController.start().onTrue(climber.commandReleaseLock());
+        operatorController.back().onTrue(climber.commandExtendLock());
 
         // Colored buttons
         operatorController.a().onTrue((new CommandAutoClimb(climber, drives, index, operatorController.getHID()))
@@ -122,11 +118,9 @@ public class RobotContainer {
 
         // POV
         operatorController.pov(0).onTrue(new CommandOnCancelClimb(climber, drives)); 
-        operatorController.pov(90).onTrue(new InstantCommand(() -> climber.moveSidewaysPOut(-1)))
-        .onFalse(new InstantCommand(() -> climber.moveSidewaysPOut(0)));
+        operatorController.pov(90).whileTrue(climber.commandRunSidewaysMover(-1));
         // new POVButton(operatorController, 180);
-        operatorController.pov(270).whileTrue(new InstantCommand(() -> climber.moveSidewaysPOut(1)))
-                .onFalse(new InstantCommand(() -> climber.moveSidewaysPOut(0)));
+        operatorController.pov(270).whileTrue(climber.commandRunSidewaysMover(1));
 
         // Bumpers
         operatorController.rightBumper().onTrue(acquisition.commandRunAcquisition());
