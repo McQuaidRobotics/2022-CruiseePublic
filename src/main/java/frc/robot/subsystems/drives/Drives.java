@@ -17,6 +17,7 @@ import edu.wpi.first.math.kinematics.SwerveModulePosition;
 import edu.wpi.first.math.kinematics.SwerveModuleState;
 import edu.wpi.first.util.datalog.DataLog;
 import edu.wpi.first.util.datalog.DoubleLogEntry;
+import edu.wpi.first.wpilibj.RobotBase;
 import edu.wpi.first.wpilibj.shuffleboard.BuiltInLayouts;
 import edu.wpi.first.wpilibj.shuffleboard.Shuffleboard;
 import edu.wpi.first.wpilibj.shuffleboard.ShuffleboardLayout;
@@ -73,15 +74,15 @@ public class Drives extends SubsystemBase {
                 new SwerveModule(3, CANIVORE_NAME, kCANIDs.REAR_LEFT_DRIVE, kCANIDs.REAR_LEFT_STEER, kCANIDs.REAR_LEFT_CANCODER, REAR_LEFT_MODULE_STEER_OFFSET)
         };
 
-        
+
         // odometry = new SwerveDrivePoseEstimator<>(Nat.N7(),Nat.N7(),Nat.N7(),
-        //                          new Rotation2d(0), 
+        //                          new Rotation2d(0),
         //                         new Pose2d(new Translation2d(0, 0), new Rotation2d(0)),
         //                         getModulePositions(),
         //                         kinematics,
-        //                         new MatBuilder<>(Nat.N7(), Nat.N1()).fill(0.02, 0.02, 0.01, 0.001,0.001,0.001,0.001), 
-        //                         new MatBuilder<>(Nat.N7(), Nat.N1()).fill(0.02, 0.02, 0.01, 0.001,0.001,0.001,0.001), 
-        //                         new MatBuilder<>(Nat.N3(), Nat.N1()).fill(0.1, 0.1, 0.01) 
+        //                         new MatBuilder<>(Nat.N7(), Nat.N1()).fill(0.02, 0.02, 0.01, 0.001,0.001,0.001,0.001),
+        //                         new MatBuilder<>(Nat.N7(), Nat.N1()).fill(0.02, 0.02, 0.01, 0.001,0.001,0.001,0.001),
+        //                         new MatBuilder<>(Nat.N3(), Nat.N1()).fill(0.1, 0.1, 0.01)
         //                 );
         odometry = new SwerveDriveOdometry(kinematics, new Rotation2d(0), getRealPositions(), new Pose2d(new Translation2d(0, 0), new Rotation2d(0)));
 
@@ -97,8 +98,10 @@ public class Drives extends SubsystemBase {
             moduleLayout.addNumber("Speed MPS", () -> module.getState().speedMetersPerSecond);
         }
 
-        DataLog log = Robot.getDataLog();
-        pigeonLog = new DoubleLogEntry(log, "Drives/pigeonRot");
+        if(RobotBase.isReal()) {
+            DataLog log = Robot.getDataLog();
+            pigeonLog = new DoubleLogEntry(log, "Drives/pigeonRot");
+        }
 
         visionMeasure.addVisionTargetPose(0.5, 0.5);
     }
@@ -225,14 +228,21 @@ public class Drives extends SubsystemBase {
         return runDrive;
     }
 
+    public Field2d getField() {
+        return field;
+    }
+
     public SwerveDriveKinematics getKinematics() {
         return kinematics;
     }
 
     @Override
     public void periodic() {
-        if(pigeonTwo.getRotation2d().getDegrees() != lastPigeonRotation) pigeonLog.append(pigeonTwo.getRotation2d().getDegrees());
-        lastPigeonRotation = pigeonTwo.getRotation2d().getDegrees();
+        if(RobotBase.isReal()) {
+            if (pigeonTwo.getRotation2d().getDegrees() != lastPigeonRotation)
+                pigeonLog.append(pigeonTwo.getRotation2d().getDegrees());
+            lastPigeonRotation = pigeonTwo.getRotation2d().getDegrees();
+        }
 
         odometry.update(pigeonTwo.getRotation2d(), getRealPositions());
         // odometry.addVisionMeasurement(visionMeasure.getVisionPose(odometry.getPoseMeters()), visionMeasure.getTimestamp());
