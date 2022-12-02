@@ -1,10 +1,12 @@
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Translation2d;
+import frc.robot.constants.kAuto;
 import frc.robot.subsystems.drives.Drives;
-import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
 
+import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 public class DrivesTest {
@@ -21,5 +23,12 @@ public class DrivesTest {
         drives.setOdometryPose(pose);
 
         assertEquals(pose, drives.getPose());
+    }
+
+    @Test
+    public void validateAutoPaths() {
+        for(kAuto.Routine routine : kAuto.Routine.values()) {
+            assertDoesNotThrow(() -> drives.runAutoPath(routine.name()));
+        }
     }
 }
