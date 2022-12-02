@@ -58,7 +58,7 @@ public class Drives extends SubsystemBase {
     private final Field2d field = new Field2d();
 
     private double lastPigeonRotation;
-    private final DoubleLogEntry pigeonLog;
+    private DoubleLogEntry pigeonLog;
     private final PoseCamera visionMeasure = new PoseCamera("gloworm");
 
     public Drives() {

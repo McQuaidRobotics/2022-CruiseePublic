@@ -1,7 +1,7 @@
+import frc.robot.constants.kAuto;
 import frc.robot.subsystems.drives.Drives;
-import frc.robot.utils.AutoUtil;
-import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 
@@ -15,8 +15,8 @@ public class AutoTest {
 
     @Test
     public void validateAutoPaths() {
-        for(AutoUtil.Routine routine : AutoUtil.Routine.values()) {
-            assertDoesNotThrow(() -> AutoUtil.generateCommand(routine.name(), drives));
+        for(kAuto.Routine routine : kAuto.Routine.values()) {
+            assertDoesNotThrow(() -> drives.runAutoPath(routine.name()));
         }
     }
 }
