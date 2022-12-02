@@ -152,7 +152,7 @@ public class Drives extends SubsystemBase {
      *
      * @return Array of swerve module positions.
      */
-    public SwerveModulePosition[] getRealPositions(){
+    public SwerveModulePosition[] getRealPositions() {
        SwerveModulePosition[] positions = new SwerveModulePosition[4];
         for(SwerveModule module : modules) {
             positions[module.moduleNumber] = module.getPosition();
@@ -195,7 +195,7 @@ public class Drives extends SubsystemBase {
      * @param pose New pose.
      */
     public void setOdometryPose(Pose2d pose) {
-        odometry.resetPosition(pose.getRotation(), getRealPositions(), getPose());
+        odometry.resetPosition(pigeonTwo.getRotation2d(), getRealPositions(), pose);
     }
 
     /**
@@ -212,7 +212,7 @@ public class Drives extends SubsystemBase {
      *
      * @param newStates The states to set the modules to.
      */
-    public void updateModules(SwerveModuleState[] newStates){
+    public void updateModules(SwerveModuleState[] newStates) {
         SwerveDriveKinematics.desaturateWheelSpeeds(newStates, MAX_VELOCITY_METERS_PER_SECOND);
 
         for(SwerveModule module : modules) {
@@ -226,10 +226,6 @@ public class Drives extends SubsystemBase {
 
     public boolean getRunDrives(){
         return runDrive;
-    }
-
-    public Field2d getField() {
-        return field;
     }
 
     public SwerveDriveKinematics getKinematics() {

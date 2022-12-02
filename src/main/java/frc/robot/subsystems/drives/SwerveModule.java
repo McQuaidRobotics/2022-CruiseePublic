@@ -5,12 +5,7 @@ import com.ctre.phoenix.motorcontrol.NeutralMode;
 import com.ctre.phoenix.motorcontrol.SupplyCurrentLimitConfiguration;
 import com.ctre.phoenix.motorcontrol.can.TalonFX;
 import com.ctre.phoenix.motorcontrol.can.TalonFXConfiguration;
-import com.ctre.phoenix.sensors.AbsoluteSensorRange;
-import com.ctre.phoenix.sensors.CANCoder;
-import com.ctre.phoenix.sensors.CANCoderConfiguration;
-import com.ctre.phoenix.sensors.SensorInitializationStrategy;
-import com.ctre.phoenix.sensors.SensorTimeBase;
-
+import com.ctre.phoenix.sensors.*;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.kinematics.SwerveModulePosition;
 import edu.wpi.first.math.kinematics.SwerveModuleState;
@@ -27,7 +22,7 @@ public class SwerveModule {
     private double lastAngle;
 
 
-    public SwerveModule(int moduleNumber, String canbus, int driveMotorID, int angleMotorID, int cancoderID, double angleOffset){
+    public SwerveModule(int moduleNumber, String canbus, int driveMotorID, int angleMotorID, int cancoderID, double angleOffset) {
         this.moduleNumber = moduleNumber;
         this.angleOffset = angleOffset;
 
@@ -46,7 +41,7 @@ public class SwerveModule {
         lastAngle = getState().angle.getDegrees();
     }
 
-    public void setDesiredState(SwerveModuleState desiredState){
+    public void setDesiredState(SwerveModuleState desiredState) {
         desiredState = SwerveUtil.optimize(desiredState, getState().angle); //Custom optimize command, since default WPILib optimize assumes continuous controller which CTRE is not
 
         double percentOutput = desiredState.speedMetersPerSecond / kSwerve.MAX_VELOCITY_METERS_PER_SECOND;
@@ -59,12 +54,12 @@ public class SwerveModule {
         }
     }
 
-    private void resetToAbsolute(){
+    private void resetToAbsolute() {
         double absolutePosition = UnitUtil.degreesToFalcon(getWheelRotation().getDegrees() - angleOffset, kSwerve.ANGLE_GEAR_RATIO);
         angleMotor.setSelectedSensorPosition(absolutePosition);
     }
 
-    private void configAngleEncoder(){
+    private void configAngleEncoder() {
         angleEncoder.configFactoryDefault();
 
         var config = new CANCoderConfiguration();
@@ -76,7 +71,7 @@ public class SwerveModule {
         angleEncoder.configAllSettings(config);
     }
 
-    private void configAngleMotor(){
+    private void configAngleMotor() {
         angleMotor.configFactoryDefault();
 
         var config = new TalonFXConfiguration();
@@ -99,7 +94,7 @@ public class SwerveModule {
         resetToAbsolute();
     }
 
-    private void configDriveMotor(){
+    private void configDriveMotor() {
         driveMotor.configFactoryDefault();
 
         var config = new TalonFXConfiguration();
@@ -124,17 +119,17 @@ public class SwerveModule {
         driveMotor.setSelectedSensorPosition(0);
     }
 
-    public Rotation2d getWheelRotation(){
+    public Rotation2d getWheelRotation() {
         return Rotation2d.fromDegrees(angleEncoder.getAbsolutePosition());
     }
 
-    public SwerveModuleState getState(){
+    public SwerveModuleState getState() {
         double velocity = UnitUtil.falconToMPS(driveMotor.getSelectedSensorVelocity(), kSwerve.WHEEL_CIRCUMFERENCE_METERS, kSwerve.DRIVE_GEAR_RATIO);
         Rotation2d angle = Rotation2d.fromDegrees(UnitUtil.falconToDegrees(angleMotor.getSelectedSensorPosition(), kSwerve.ANGLE_GEAR_RATIO));
         return new SwerveModuleState(velocity, angle);
     }
 
-    public SwerveModulePosition getPosition(){
+    public SwerveModulePosition getPosition() {
         double distance = UnitUtil.falconToM(driveMotor.getSelectedSensorPosition(), kSwerve.WHEEL_CIRCUMFERENCE_METERS, kSwerve.DRIVE_GEAR_RATIO);
         Rotation2d angle = Rotation2d.fromDegrees(UnitUtil.falconToDegrees(angleMotor.getSelectedSensorPosition(), kSwerve.ANGLE_GEAR_RATIO));
         return new SwerveModulePosition(distance, angle);
