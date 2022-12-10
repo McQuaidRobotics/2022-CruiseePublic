@@ -28,6 +28,8 @@ public class Robot extends TimedRobot {
         dataLog = DataLogManager.getLog();
         DriverStation.startDataLog(dataLog);
 
+        RobotIdentifier.getRobotName();
+
         robotContainer = new RobotContainer();
 
         kAuto.Routine[] routines = kAuto.Routine.values();
