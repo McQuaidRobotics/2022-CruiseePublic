@@ -177,7 +177,7 @@ public class RobotContainer {
                 Commands.sequence(
                         acquisition.commandRunAcquisition(),
                         drives.runAutoPath("Hangar-Two-Ball-1"),
-                        Commands.wait(1.0),
+                        Commands.waitSeconds(1000L),
                         ShooterCommands.complexShootBalls(shooter, index, acquisition, 3, kControl.SHOOTER_AUTO_RPMS),
                         drives.runAutoPath("Hangar-Two-Ball-2")
                 ).schedule();
@@ -186,7 +186,7 @@ public class RobotContainer {
                 Commands.sequence(
                         acquisition.commandRunAcquisition(),
                         drives.runAutoPath("Terminal-Two-Ball-1"),
-                        Commands.wait(1.0),
+                        Commands.waitSeconds(1.0),
                         ShooterCommands.complexShootBalls(shooter, index, acquisition, 3, kControl.SHOOTER_AUTO_RPMS),
                         drives.runAutoPath("Terminal-Two-Ball-2")
                 ).schedule();
