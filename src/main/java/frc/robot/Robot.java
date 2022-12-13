@@ -4,7 +4,6 @@
 
 package frc.robot;
 
-import edu.wpi.first.networktables.NetworkTableInstance;
 import edu.wpi.first.util.datalog.DataLog;
 import edu.wpi.first.wpilibj.*;
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
@@ -30,6 +29,8 @@ public class Robot extends TimedRobot {
             DriverStation.silenceJoystickConnectionWarning(true);
         }
 
+        RobotIdentifier.getRobotName();
+
         robotContainer = new RobotContainer();
 
         kAuto.Routine[] routines = kAuto.Routine.values();
@@ -48,8 +49,6 @@ public class Robot extends TimedRobot {
         robotContainer.setLEDs(0);
 
         SmartDashboard.putNumber("Climb Time", 45);
-
-        NetworkTableInstance.getDefault().getEntry("robotName").setString("lance");
     }
 
     @Override

@@ -13,7 +13,7 @@ public class RobotIdentifier {
 
     public static String getRobotName() {
         String robotName = numToName.get(RobotController.getSerialNumber());
-        NetworkTableInstance.getDefault().getEntry("/robotName").setString(robotName);
+        if(robotName != null) NetworkTableInstance.getDefault().getEntry("/robotName").setString(robotName);
         return robotName;
     }
 }
