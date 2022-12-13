@@ -4,6 +4,7 @@
 
 package frc.robot.subsystems.drives;
 
+import com.ctre.phoenix.sensors.BasePigeonSimCollection;
 import com.ctre.phoenix.sensors.Pigeon2;
 import com.ctre.phoenix.sensors.WPI_Pigeon2;
 import com.pathplanner.lib.PathPlanner;
@@ -60,6 +61,8 @@ public class Drives extends SubsystemBase {
     private double lastPigeonRotation;
     private DoubleLogEntry pigeonLog;
     private final PoseCamera visionMeasure = new PoseCamera("gloworm");
+
+    private final BasePigeonSimCollection gyroSim = pigeonTwo.getSimCollection();
 
     public Drives() {
         pigeonTwo.configFactoryDefault();
@@ -254,5 +257,16 @@ public class Drives extends SubsystemBase {
             SmartDashboard.putNumber("distanceToTarget", distance);
         }
          */
+    }
+
+    @Override
+    public void simulationPeriodic() {
+        for (SwerveModule module: modules) {
+            module.simulationPeriodic();
+        }
+
+        double chassisOmega = kinematics.toChassisSpeeds(getRealStates()).omegaRadiansPerSecond;
+        chassisOmega = Math.toDegrees(chassisOmega);
+        gyroSim.addHeading(chassisOmega*0.02);
     }
 }

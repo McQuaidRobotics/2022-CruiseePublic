@@ -71,4 +71,17 @@ public class UnitUtil {
         double wheelRPM = ((velocity * 60) / circumference);
         return RPMToFalcon(wheelRPM, gearRatio);
     }
+
+    public static double rotationsToVelocity(double rotations, double motorRotationsPerMechanismRotation){
+        return rotations * 2048 / 10 * motorRotationsPerMechanismRotation;
+    }
+    public static double positionToRotations(double nativePosition, double motorRotationsPerMechanismRotation){
+        return nativePosition / 2048 / motorRotationsPerMechanismRotation;
+    }
+    public static double positionToDegrees(double nativePosition, double motorRotationsPerMechanismRotation){
+        return positionToRotations(nativePosition, motorRotationsPerMechanismRotation) * 360;
+    }
+    public static double positionToMeters(double nativePosition, double motorRotationsPerMechanismRotation, double circumferenceMeters){
+        return positionToRotations(nativePosition, motorRotationsPerMechanismRotation) * circumferenceMeters;
+    }
 }

@@ -1,9 +1,6 @@
 package frc.robot.constants;
 
-import edu.wpi.first.math.numbers.N1;
-import edu.wpi.first.math.numbers.N2;
-import edu.wpi.first.math.system.LinearSystem;
-import edu.wpi.first.math.system.plant.LinearSystemId;
+import edu.wpi.first.math.controller.SimpleMotorFeedforward;
 
 public class kSwerve {
     public static String CANIVORE_NAME = "McQDriveBus";
@@ -61,4 +58,17 @@ public class kSwerve {
     public static final double ANGLE_CONTINUOUS_CURRENT_LIMIT = 35;
     public static final double ANGLE_PEAK_CURRENT_LIMIT = 60;
     public static final double ANGLE_PEAK_CURRENT_DURATION = 0.1;
+
+    // TODO: THEORETICAL GAINS
+    public static final SimpleMotorFeedforward kDriveFF = new SimpleMotorFeedforward( // real
+            0.2, // Voltage to break static friction
+            2.25, // Volts per meter per second
+            0.17 // Volts per meter per second squared
+    );
+    // Steer feed forward
+    public static final SimpleMotorFeedforward kSteerFF = new SimpleMotorFeedforward( // real
+            0.55, // Voltage to break static friction
+            0.23, // Volts per radian per second
+            0.0056 // Volts per radian per second squared
+    );
 }
