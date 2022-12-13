@@ -6,10 +6,7 @@ package frc.robot;
 
 import edu.wpi.first.networktables.NetworkTableInstance;
 import edu.wpi.first.util.datalog.DataLog;
-import edu.wpi.first.wpilibj.DataLogManager;
-import edu.wpi.first.wpilibj.DriverStation;
-import edu.wpi.first.wpilibj.GenericHID;
-import edu.wpi.first.wpilibj.TimedRobot;
+import edu.wpi.first.wpilibj.*;
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
@@ -28,6 +25,10 @@ public class Robot extends TimedRobot {
         DataLogManager.start("/U");
         dataLog = DataLogManager.getLog();
         DriverStation.startDataLog(dataLog);
+
+        if(RobotBase.isSimulation()) {
+            DriverStation.silenceJoystickConnectionWarning(true);
+        }
 
         robotContainer = new RobotContainer();
 

@@ -12,10 +12,7 @@ import com.pathplanner.lib.PathPlannerTrajectory;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Translation2d;
-import edu.wpi.first.math.kinematics.SwerveDriveKinematics;
-import edu.wpi.first.math.kinematics.SwerveDriveOdometry;
-import edu.wpi.first.math.kinematics.SwerveModulePosition;
-import edu.wpi.first.math.kinematics.SwerveModuleState;
+import edu.wpi.first.math.kinematics.*;
 import edu.wpi.first.util.datalog.DataLog;
 import edu.wpi.first.util.datalog.DoubleLogEntry;
 import edu.wpi.first.wpilibj.RobotBase;
@@ -27,6 +24,7 @@ import edu.wpi.first.wpilibj.smartdashboard.Field2d;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
+import edu.wpi.first.wpilibj2.command.SequentialCommandGroup;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Robot;
 import frc.robot.constants.kAuto;
@@ -100,6 +98,7 @@ public class Drives extends SubsystemBase {
             moduleLayout.addNumber("Falcon Rotation", () -> module.getState().angle.getDegrees());
             moduleLayout.addNumber("Speed MPS", () -> module.getState().speedMetersPerSecond);
         }
+        tab.addString("Current Command", () -> getCurrentCommand() != null ? getCurrentCommand().getName() : "");
 
         if(RobotBase.isReal()) {
             DataLog log = Robot.getDataLog();
@@ -121,13 +120,13 @@ public class Drives extends SubsystemBase {
         PathPlannerTrajectory.PathPlannerState initialState = path.getInitialState();
         Pose2d startingPose = new Pose2d(initialState.poseMeters.getTranslation(), initialState.holonomicRotation);
 
-        return Commands.sequence(
-                Commands.run(() -> {
+        return new SequentialCommandGroup(
+                Commands.runOnce(() -> {
                     field.getObject("traj").setTrajectory(path);
-                    field.getObject("beginpos").setPose(path.getInitialState().poseMeters);
+                    field.getObject("beginpos").setPose(startingPose);
                     field.getObject("endpos").setPose(path.getEndState().poseMeters);
                 }),
-                Commands.run(() -> setOdometryPose(startingPose)),
+                Commands.runOnce(() -> setOdometryPose(startingPose)),
                 new MCQSwerveControllerCommand(
                         path,
                         this::getPose,
@@ -137,8 +136,9 @@ public class Drives extends SubsystemBase {
                         kAuto.THETA_AUTO_PID,
                         this::updateModules,
                         this
-                )
-        ).withName("AutonomousCommand/" + pathName);
+                ),
+                Commands.runOnce(() -> this.updateModules(kinematics.toSwerveModuleStates(new ChassisSpeeds())))
+        );
     }
 
     /**

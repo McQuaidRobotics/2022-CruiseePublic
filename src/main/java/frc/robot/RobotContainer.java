@@ -200,9 +200,7 @@ public class RobotContainer {
             case NOTHING:
                 return;
             case DEFAULT:
-                Commands.sequence(
-                        drives.runAutoPath("Default")
-                ).schedule();
+                drives.runAutoPath("Default").schedule();
                 break;
             case TEST:
                 Commands.sequence(
