@@ -130,7 +130,6 @@ public class Drives extends SubsystemBase {
                 new MCQSwerveControllerCommand(
                         path,
                         this::getPose,
-                        getKinematics(),
                         kAuto.X_PID_CONTROLLER,
                         kAuto.Y_PID_CONTROLLER,
                         kAuto.THETA_AUTO_PID,
@@ -211,6 +210,15 @@ public class Drives extends SubsystemBase {
     }
 
     /**
+     * Update the modules with a new ChassisSpeeds
+     *
+     * @param speeds The ChassisSpeeds to drive at.
+     */
+    public void updateModules(ChassisSpeeds speeds) {
+        updateModules(kinematics.toSwerveModuleStates(speeds));
+    }
+
+    /**
      * Update the modules with a new set of SwerveModuleStates
      *
      * @param newStates The states to set the modules to.
@@ -229,10 +237,6 @@ public class Drives extends SubsystemBase {
 
     public boolean getRunDrives(){
         return runDrive;
-    }
-
-    public SwerveDriveKinematics getKinematics() {
-        return kinematics;
     }
 
     @Override
