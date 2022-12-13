@@ -14,7 +14,6 @@ import edu.wpi.first.math.system.plant.DCMotor;
 import edu.wpi.first.math.system.plant.LinearSystemId;
 import edu.wpi.first.wpilibj.RobotController;
 import edu.wpi.first.wpilibj.simulation.FlywheelSim;
-import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import frc.robot.constants.kSwerve;
 import frc.robot.utils.SwerveUtil;
 import frc.robot.utils.UnitUtil;
@@ -205,12 +204,6 @@ public class SwerveModule {
         driveMotorSim.setBusVoltage(RobotController.getBatteryVoltage());
         steerMotorSim.setBusVoltage(RobotController.getBatteryVoltage());
         steerEncoderSim.setBusVoltage(RobotController.getBatteryVoltage());
-
-        SmartDashboard.putNumber("driveSim/driveVoltage", driveVoltage);
-        SmartDashboard.putNumber("driveSim/steerVoltage", steerVoltage);
-        SmartDashboard.putNumber("driveSim/driveRPM", driveWheelSim.getAngularVelocityRPM());
-        SmartDashboard.putNumber("driveSim/steerRPM", steeringSim.getAngularVelocityRPM());
-        SmartDashboard.putNumber("driveSim/busVoltage", RobotController.getBatteryVoltage());
     }
 
     public double getDriveCurrentDraw(){
