@@ -29,7 +29,7 @@ public class Robot extends TimedRobot {
             DriverStation.silenceJoystickConnectionWarning(true);
         }
 
-        RobotIdentifier.getRobotName();
+        RobotIdentifier.initNetworkTables();
 
         robotContainer = new RobotContainer();
 
