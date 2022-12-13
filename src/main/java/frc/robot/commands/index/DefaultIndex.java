@@ -5,9 +5,7 @@
 package frc.robot.commands.index;
 
 import edu.wpi.first.wpilibj2.command.CommandBase;
-import frc.robot.Robot;
 import frc.robot.constants.kControl;
-import frc.robot.constants.kLED;
 import frc.robot.subsystems.Index;
 import frc.robot.subsystems.Index.BallState;
 
@@ -16,8 +14,7 @@ public class DefaultIndex extends CommandBase {
   @SuppressWarnings({"PMD.UnusedPrivateField", "PMD.SingularField"})
   private final Index index;
   private final double minIndexIncrement = 5;
-  private boolean shiftingBall = false;
-  private double startingPosition;  
+  private double startingPosition;
   private double wantedPosition;
   private double offset = 0;
   public DefaultIndex(Index index) {

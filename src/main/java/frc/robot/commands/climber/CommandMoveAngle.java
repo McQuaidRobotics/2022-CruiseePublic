@@ -14,7 +14,7 @@ public class CommandMoveAngle extends CommandBase {
   private final double angle;
   private final double angleErrorMin;
   private final CurrentLimitType currentCurrentLimitType;
-  private boolean hold;
+  private final boolean hold;
 
   public enum CurrentLimitType {
     ON,
