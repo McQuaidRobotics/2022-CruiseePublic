@@ -136,7 +136,7 @@ public class Drives extends SubsystemBase {
                         this::updateModules,
                         this
                 ),
-                Commands.runOnce(() -> this.updateModules(kinematics.toSwerveModuleStates(new ChassisSpeeds())))
+                Commands.runOnce(() -> this.updateModules(new ChassisSpeeds()))
         );
     }
 
