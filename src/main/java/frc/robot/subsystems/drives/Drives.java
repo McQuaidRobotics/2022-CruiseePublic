@@ -31,7 +31,6 @@ import frc.robot.constants.kAuto;
 import frc.robot.constants.kCANIDs;
 import frc.robot.constants.kSwerve;
 import frc.robot.utils.MCQSwerveControllerCommand;
-import frc.robot.utils.PoseCamera;
 
 import static frc.robot.constants.kSwerve.*;
 
@@ -58,7 +57,7 @@ public class Drives extends SubsystemBase {
 
     private double lastPigeonRotation;
     private DoubleLogEntry pigeonLog;
-    private final PoseCamera visionMeasure = new PoseCamera("gloworm");
+    //private final PoseCamera visionMeasure = new PoseCamera("gloworm");
 
     private final BasePigeonSimCollection gyroSim = pigeonTwo.getSimCollection();
 
@@ -105,7 +104,7 @@ public class Drives extends SubsystemBase {
             pigeonLog = new DoubleLogEntry(log, "Drives/pigeonRot");
         }
 
-        visionMeasure.addVisionTargetPose(0.5, 0.5);
+        //visionMeasure.addVisionTargetPose(0.5, 0.5);
     }
 
     /**
@@ -254,7 +253,7 @@ public class Drives extends SubsystemBase {
         SmartDashboard.putNumber("odometry.getEstimatedPositionY", odometry.getPoseMeters().getY());
         var pose = getPose();
         field.setRobotPose(pose);
-        var target = visionMeasure.getObject(0);
+        //var target = visionMeasure.getObject(0);
         /*
         if(target != null){
             double distance = pose.getTranslation().getDistance(target);
