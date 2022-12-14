@@ -4,6 +4,7 @@
 
 package frc.robot.subsystems.drives;
 
+import com.ctre.phoenix.sensors.BasePigeonSimCollection;
 import com.ctre.phoenix.sensors.Pigeon2;
 import com.ctre.phoenix.sensors.WPI_Pigeon2;
 import com.pathplanner.lib.PathPlanner;
@@ -11,10 +12,7 @@ import com.pathplanner.lib.PathPlannerTrajectory;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Translation2d;
-import edu.wpi.first.math.kinematics.SwerveDriveKinematics;
-import edu.wpi.first.math.kinematics.SwerveDriveOdometry;
-import edu.wpi.first.math.kinematics.SwerveModulePosition;
-import edu.wpi.first.math.kinematics.SwerveModuleState;
+import edu.wpi.first.math.kinematics.*;
 import edu.wpi.first.util.datalog.DataLog;
 import edu.wpi.first.util.datalog.DoubleLogEntry;
 import edu.wpi.first.wpilibj.RobotBase;
@@ -26,13 +24,13 @@ import edu.wpi.first.wpilibj.smartdashboard.Field2d;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
+import edu.wpi.first.wpilibj2.command.SequentialCommandGroup;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Robot;
 import frc.robot.constants.kAuto;
 import frc.robot.constants.kCANIDs;
 import frc.robot.constants.kSwerve;
 import frc.robot.utils.MCQSwerveControllerCommand;
-import frc.robot.utils.PoseCamera;
 
 import static frc.robot.constants.kSwerve.*;
 
@@ -59,7 +57,9 @@ public class Drives extends SubsystemBase {
 
     private double lastPigeonRotation;
     private DoubleLogEntry pigeonLog;
-    private final PoseCamera visionMeasure = new PoseCamera("gloworm");
+    //private final PoseCamera visionMeasure = new PoseCamera("gloworm");
+
+    private final BasePigeonSimCollection gyroSim = pigeonTwo.getSimCollection();
 
     public Drives() {
         pigeonTwo.configFactoryDefault();
@@ -97,13 +97,14 @@ public class Drives extends SubsystemBase {
             moduleLayout.addNumber("Falcon Rotation", () -> module.getState().angle.getDegrees());
             moduleLayout.addNumber("Speed MPS", () -> module.getState().speedMetersPerSecond);
         }
+        tab.addString("Current Command", () -> getCurrentCommand() != null ? getCurrentCommand().getName() : "");
 
         if(RobotBase.isReal()) {
             DataLog log = Robot.getDataLog();
             pigeonLog = new DoubleLogEntry(log, "Drives/pigeonRot");
         }
 
-        visionMeasure.addVisionTargetPose(0.5, 0.5);
+        //visionMeasure.addVisionTargetPose(0.5, 0.5);
     }
 
     /**
@@ -118,24 +119,24 @@ public class Drives extends SubsystemBase {
         PathPlannerTrajectory.PathPlannerState initialState = path.getInitialState();
         Pose2d startingPose = new Pose2d(initialState.poseMeters.getTranslation(), initialState.holonomicRotation);
 
-        return Commands.sequence(
-                Commands.run(() -> {
+        return new SequentialCommandGroup(
+                Commands.runOnce(() -> {
                     field.getObject("traj").setTrajectory(path);
-                    field.getObject("beginpos").setPose(path.getInitialState().poseMeters);
+                    field.getObject("beginpos").setPose(startingPose);
                     field.getObject("endpos").setPose(path.getEndState().poseMeters);
                 }),
-                Commands.run(() -> setOdometryPose(startingPose)),
+                Commands.runOnce(() -> setOdometryPose(startingPose)),
                 new MCQSwerveControllerCommand(
                         path,
                         this::getPose,
-                        getKinematics(),
                         kAuto.X_PID_CONTROLLER,
                         kAuto.Y_PID_CONTROLLER,
                         kAuto.THETA_AUTO_PID,
                         this::updateModules,
                         this
-                )
-        ).withName("AutonomousCommand/" + pathName);
+                ),
+                Commands.runOnce(() -> this.updateModules(new ChassisSpeeds()))
+        );
     }
 
     /**
@@ -208,6 +209,15 @@ public class Drives extends SubsystemBase {
     }
 
     /**
+     * Update the modules with a new ChassisSpeeds
+     *
+     * @param speeds The ChassisSpeeds to drive at.
+     */
+    public void updateModules(ChassisSpeeds speeds) {
+        updateModules(kinematics.toSwerveModuleStates(speeds));
+    }
+
+    /**
      * Update the modules with a new set of SwerveModuleStates
      *
      * @param newStates The states to set the modules to.
@@ -228,10 +238,6 @@ public class Drives extends SubsystemBase {
         return runDrive;
     }
 
-    public SwerveDriveKinematics getKinematics() {
-        return kinematics;
-    }
-
     @Override
     public void periodic() {
         if(RobotBase.isReal()) {
@@ -247,12 +253,23 @@ public class Drives extends SubsystemBase {
         SmartDashboard.putNumber("odometry.getEstimatedPositionY", odometry.getPoseMeters().getY());
         var pose = getPose();
         field.setRobotPose(pose);
-        var target = visionMeasure.getObject(0);
+        //var target = visionMeasure.getObject(0);
         /*
         if(target != null){
             double distance = pose.getTranslation().getDistance(target);
             SmartDashboard.putNumber("distanceToTarget", distance);
         }
          */
+    }
+
+    @Override
+    public void simulationPeriodic() {
+        for (SwerveModule module: modules) {
+            module.simulationPeriodic();
+        }
+
+        double chassisOmega = kinematics.toChassisSpeeds(getRealStates()).omegaRadiansPerSecond;
+        chassisOmega = Math.toDegrees(chassisOmega);
+        gyroSim.addHeading(chassisOmega*0.02);
     }
 }

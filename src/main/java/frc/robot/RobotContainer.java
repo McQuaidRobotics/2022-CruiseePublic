@@ -177,7 +177,7 @@ public class RobotContainer {
                 Commands.sequence(
                         acquisition.commandRunAcquisition(),
                         drives.runAutoPath("Hangar-Two-Ball-1"),
-                        Commands.waitSeconds(1000L),
+                        Commands.waitSeconds(1.0),
                         ShooterCommands.complexShootBalls(shooter, index, acquisition, 3, kControl.SHOOTER_AUTO_RPMS),
                         drives.runAutoPath("Hangar-Two-Ball-2")
                 ).schedule();
@@ -200,9 +200,7 @@ public class RobotContainer {
             case NOTHING:
                 return;
             case DEFAULT:
-                Commands.sequence(
-                        drives.runAutoPath("Default")
-                ).schedule();
+                drives.runAutoPath("Default").schedule();
                 break;
             case TEST:
                 Commands.sequence(

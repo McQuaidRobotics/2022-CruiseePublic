@@ -9,7 +9,6 @@ import com.revrobotics.CANSparkMax.IdleMode;
 import com.revrobotics.CANSparkMaxLowLevel.MotorType;
 import com.revrobotics.RelativeEncoder;
 import com.revrobotics.SparkMaxPIDController;
-
 import edu.wpi.first.math.filter.Debouncer;
 import edu.wpi.first.math.filter.Debouncer.DebounceType;
 import edu.wpi.first.util.datalog.DataLog;
@@ -33,7 +32,7 @@ public class Index extends SubsystemBase {
 
   private double lastIndexAmps;
   private final DoubleLogEntry indexAmperageLog;
-  private IndexState indexState;
+  private final IndexState indexState;
 
   public Index() {
     motor = new CANSparkMax(kCANIDs.IDX_MOTOR, MotorType.kBrushless);
@@ -122,7 +121,7 @@ public class Index extends SubsystemBase {
     boolean prevDetected = false;
     boolean currDetected = true;
     boolean isTest = false;
-    private Debouncer debounce = new Debouncer(kControl.INDEX_DEBOUNCE_TIME, DebounceType.kBoth);
+    private final Debouncer debounce = new Debouncer(kControl.INDEX_DEBOUNCE_TIME, DebounceType.kBoth);
 
     public IndexState(BallState startingState){
       this.ballState = startingState;

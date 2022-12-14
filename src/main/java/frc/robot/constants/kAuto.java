@@ -6,7 +6,7 @@ import edu.wpi.first.math.trajectory.TrapezoidProfile;
 
 public class kAuto {
     private static final TrapezoidProfile.Constraints CONSTRAINTS = new TrapezoidProfile.Constraints(kSwerve.MAX_ANGULAR_VELOCITY_RADIANS_PER_SECOND, kSwerve.MAX_ANGULAR_ACCEL_RADIANS_PER_SECOND);
-    public static final ProfiledPIDController THETA_AUTO_PID = new ProfiledPIDController(3.5, 0.1, 0, CONSTRAINTS, 0.02);
+    public static final PIDController THETA_AUTO_PID = new PIDController(3.5, 0.1, 0);
     public static final ProfiledPIDController THETA_AIMING_PID = new ProfiledPIDController(7.5, 0.1, 0, CONSTRAINTS, 0.02);
 
     static {

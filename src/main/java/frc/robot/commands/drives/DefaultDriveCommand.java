@@ -20,8 +20,8 @@ public class DefaultDriveCommand extends CommandBase {
 
     private double lastRotationSpeed = 0;
     private Rotation2d setpointAngle = new Rotation2d(); // Degrees
-    private BooleanSupplier activateVision;
-    private TrackingHelper trackingHelper;
+    private final BooleanSupplier activateVision;
+    private final TrackingHelper trackingHelper;
     public DefaultDriveCommand(Drives drives, DoubleSupplier translationXSupplier, DoubleSupplier translationYSupplier, DoubleSupplier rotationSupplier, BooleanSupplier activateVision) {
         this.drives = drives;
         this.translationXSupplier = translationXSupplier;
@@ -51,13 +51,11 @@ public class DefaultDriveCommand extends CommandBase {
             }
 
             drives.updateModules(
-                    drives.getKinematics().toSwerveModuleStates(
-                            ChassisSpeeds.fromFieldRelativeSpeeds(
-                                    translationXSupplier.getAsDouble(),
-                                    translationYSupplier.getAsDouble(),
-                                    rotationSpeed,
-                                    drives.getRotation()
-                            )
+                    ChassisSpeeds.fromFieldRelativeSpeeds(
+                            translationXSupplier.getAsDouble(),
+                            translationYSupplier.getAsDouble(),
+                            rotationSpeed,
+                            drives.getRotation()
                     )
             );
 
@@ -67,6 +65,6 @@ public class DefaultDriveCommand extends CommandBase {
 
     @Override
     public void end(boolean interrupted) {
-        drives.updateModules(drives.getKinematics().toSwerveModuleStates(new ChassisSpeeds(0.0, 0.0, 0.0)));
+        drives.updateModules(new ChassisSpeeds(0.0, 0.0, 0.0));
     }
 }

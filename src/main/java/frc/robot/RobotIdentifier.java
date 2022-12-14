@@ -1,8 +1,12 @@
 package frc.robot;
 
 import edu.wpi.first.networktables.NetworkTableInstance;
+import edu.wpi.first.wpilibj.Filesystem;
 import edu.wpi.first.wpilibj.RobotController;
 
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.Map;
 
 public class RobotIdentifier {
@@ -13,7 +17,25 @@ public class RobotIdentifier {
 
     public static String getRobotName() {
         String robotName = numToName.get(RobotController.getSerialNumber());
-        NetworkTableInstance.getDefault().getEntry("/robotName").setString(robotName);
+        if(robotName == null) {
+            robotName = "";
+        }
         return robotName;
+    }
+
+    public static void initNetworkTables() {
+        NetworkTableInstance instance = NetworkTableInstance.getDefault();
+        instance.getEntry("/robotName").setString(getRobotName());
+
+        try {
+            Path deployDir = Filesystem.getDeployDirectory().toPath();
+            Path branchFile = deployDir.resolve("branch.txt");
+            Path commitFile = deployDir.resolve("commit.txt");
+
+            instance.getEntry("/gitBranch").setString(Files.readString(branchFile));
+            instance.getEntry("/gitCommit").setString(Files.readString(commitFile));
+        } catch (IOException e) {
+            System.err.println("Could not read git information files.");
+        }
     }
 }
