@@ -56,12 +56,10 @@ public class Drives extends SubsystemBase {
                     new Translation2d(-DRIVETRAIN_TRACKWIDTH_METERS / 2.0, -DRIVETRAIN_WHEELBASE_METERS / 2.0)
     );
     private final SwerveDriveOdometry odometry;
-    // private final SwerveDrivePoseEstimator<N7, N7, N7> odometry;
     private final Field2d field = new Field2d();
 
     private double lastPigeonRotation;
     private DoubleLogEntry pigeonLog;
-    //private final PoseCamera visionMeasure = new PoseCamera("gloworm");
 
     private final BasePigeonSimCollection gyroSim = pigeonTwo.getSimCollection();
 
@@ -78,16 +76,6 @@ public class Drives extends SubsystemBase {
                 new SwerveModule(3, CANIVORE_NAME, kCANIDs.REAR_LEFT_DRIVE, kCANIDs.REAR_LEFT_STEER, kCANIDs.REAR_LEFT_CANCODER, REAR_LEFT_MODULE_STEER_OFFSET)
         };
 
-
-        // odometry = new SwerveDrivePoseEstimator<>(Nat.N7(),Nat.N7(),Nat.N7(),
-        //                          new Rotation2d(0),
-        //                         new Pose2d(new Translation2d(0, 0), new Rotation2d(0)),
-        //                         getModulePositions(),
-        //                         kinematics,
-        //                         new MatBuilder<>(Nat.N7(), Nat.N1()).fill(0.02, 0.02, 0.01, 0.001,0.001,0.001,0.001),
-        //                         new MatBuilder<>(Nat.N7(), Nat.N1()).fill(0.02, 0.02, 0.01, 0.001,0.001,0.001,0.001),
-        //                         new MatBuilder<>(Nat.N3(), Nat.N1()).fill(0.1, 0.1, 0.01)
-        //                 );
         odometry = new SwerveDriveOdometry(kinematics, new Rotation2d(0), getRealPositions(), new Pose2d(new Translation2d(0, 0), new Rotation2d(0)));
 
         ShuffleboardTab tab = Shuffleboard.getTab("Drives");
@@ -107,8 +95,6 @@ public class Drives extends SubsystemBase {
             DataLog log = Robot.getDataLog();
             pigeonLog = new DoubleLogEntry(log, "Drives/pigeonRot");
         }
-
-        //visionMeasure.addVisionTargetPose(0.5, 0.5);
     }
 
     /**
