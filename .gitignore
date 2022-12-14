@@ -159,8 +159,11 @@ gradle-app.setting
 bin/
 
 # Simulation GUI and other tools window save file
-*-window.json
+simgui*.json
 
 # Commit and branch temp deploy files
 src/main/deploy/branch.txt
 src/main/deploy/commit.txt
+
+# IntelliJ IDEA Configs
+.idea/*
