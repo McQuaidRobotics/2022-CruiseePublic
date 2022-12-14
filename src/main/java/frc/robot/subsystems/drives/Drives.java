@@ -9,6 +9,7 @@ import com.ctre.phoenix.sensors.Pigeon2;
 import com.ctre.phoenix.sensors.WPI_Pigeon2;
 import com.pathplanner.lib.PathPlanner;
 import com.pathplanner.lib.PathPlannerTrajectory;
+import com.pathplanner.lib.PathPoint;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Translation2d;
@@ -31,6 +32,8 @@ import frc.robot.constants.kAuto;
 import frc.robot.constants.kCANIDs;
 import frc.robot.constants.kSwerve;
 import frc.robot.utils.MCQSwerveControllerCommand;
+
+import java.util.List;
 
 import static frc.robot.constants.kSwerve.*;
 
@@ -113,9 +116,20 @@ public class Drives extends SubsystemBase {
      * @param pathName Name of path in PathPlanner
      * @return Command that runs an autonomous path
      */
-    public Command runAutoPath(String pathName) {
+    public Command commandRunGeneratedPath(String pathName) {
         PathPlannerTrajectory path = PathPlanner.loadPath(pathName, kSwerve.MAX_VELOCITY_METERS_PER_SECOND, kSwerve.MAX_ACCELERATION);
+        return commandRunPath(path);
+    }
 
+    /**
+     * Autonomously move to a pose on the field.
+     */
+    public Command commandDriveTrajectory(List<PathPoint> pose2ds) {
+        PathPlannerTrajectory path = PathPlanner.generatePath(kSwerve.MAX_VELOCITY_METERS_PER_SECOND, kSwerve.MAX_ACCELERATION, false, pose2ds.get(0), pose2ds.get(1), pose2ds.subList(2, pose2ds.size()).toArray(new PathPoint[0]));
+        return commandRunPath(path);
+    }
+
+    public Command commandRunPath(PathPlannerTrajectory path) {
         PathPlannerTrajectory.PathPlannerState initialState = path.getInitialState();
         Pose2d startingPose = new Pose2d(initialState.poseMeters.getTranslation(), initialState.holonomicRotation);
 

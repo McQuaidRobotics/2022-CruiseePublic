@@ -4,6 +4,9 @@
 
 package frc.robot;
 
+import com.pathplanner.lib.PathPoint;
+import edu.wpi.first.math.geometry.Rotation2d;
+import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.wpilibj.GenericHID;
 import edu.wpi.first.wpilibj.PneumaticHub;
 import edu.wpi.first.wpilibj.PowerDistribution;
@@ -27,6 +30,8 @@ import frc.robot.subsystems.Shooter;
 import frc.robot.subsystems.climber.Climber;
 import frc.robot.subsystems.drives.Drives;
 import frc.robot.utils.ControllerRumble;
+
+import java.util.List;
 
 public class RobotContainer {
     public final PowerDistribution pdp = new PowerDistribution(kCANIDs.PDP, PowerDistribution.ModuleType.kRev);
@@ -176,35 +181,41 @@ public class RobotContainer {
             case HANGAR_TWO_BALL:
                 Commands.sequence(
                         acquisition.commandRunAcquisition(),
-                        drives.runAutoPath("Hangar-Two-Ball-1"),
+                        drives.commandRunGeneratedPath("Hangar-Two-Ball-1"),
                         Commands.waitSeconds(1.0),
                         ShooterCommands.complexShootBalls(shooter, index, acquisition, 3, kControl.SHOOTER_AUTO_RPMS),
-                        drives.runAutoPath("Hangar-Two-Ball-2")
+                        drives.commandRunGeneratedPath("Hangar-Two-Ball-2")
                 ).schedule();
                 break;
             case TERMINAL_TWO_BALL:
                 Commands.sequence(
                         acquisition.commandRunAcquisition(),
-                        drives.runAutoPath("Terminal-Two-Ball-1"),
+                        drives.commandRunGeneratedPath("Terminal-Two-Ball-1"),
                         Commands.waitSeconds(1.0),
                         ShooterCommands.complexShootBalls(shooter, index, acquisition, 3, kControl.SHOOTER_AUTO_RPMS),
-                        drives.runAutoPath("Terminal-Two-Ball-2")
+                        drives.commandRunGeneratedPath("Terminal-Two-Ball-2")
                 ).schedule();
                 break;
             case POTATO:
                 Commands.sequence(
                         ShooterCommands.complexShootBalls(shooter, index, acquisition, 2, kControl.SHOOTER_AUTO_RPMS),
-                        drives.runAutoPath("Potato")
+                        drives.commandRunGeneratedPath("Potato")
                 ).schedule();
                 break;
             case NOTHING:
                 return;
             case DEFAULT:
-                drives.runAutoPath("Default").schedule();
+                drives.commandRunGeneratedPath("Default").schedule();
                 break;
             case TEST:
                 Commands.sequence(
-                        drives.runAutoPath("Forward_4_Meters_90_Turn")
+                        drives.commandDriveTrajectory(
+                                List.of(
+                                        new PathPoint(new Translation2d(1.0, 1.0), Rotation2d.fromDegrees(0), Rotation2d.fromDegrees(0), 2), // position, heading(direction of travel), holonomic rotation, velocity override
+                                        new PathPoint(new Translation2d(3.0, 3.0), Rotation2d.fromDegrees(45), Rotation2d.fromDegrees(-90)), // position, heading(direction of travel), holonomic rotation
+                                        new PathPoint(new Translation2d(5.0, 3.0), Rotation2d.fromDegrees(0), Rotation2d.fromDegrees(-30)) // position, heading(direction of travel), holonomic rotation
+                                )
+                        )
                 ).schedule();
                 break;
         }
