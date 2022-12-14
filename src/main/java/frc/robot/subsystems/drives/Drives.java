@@ -33,6 +33,7 @@ import frc.robot.constants.kCANIDs;
 import frc.robot.constants.kSwerve;
 import frc.robot.utils.MCQSwerveControllerCommand;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import static frc.robot.constants.kSwerve.*;
@@ -125,7 +126,10 @@ public class Drives extends SubsystemBase {
      * Autonomously move to a pose on the field.
      */
     public Command commandDriveTrajectory(List<PathPoint> pose2ds) {
-        PathPlannerTrajectory path = PathPlanner.generatePath(kSwerve.MAX_VELOCITY_METERS_PER_SECOND, kSwerve.MAX_ACCELERATION, false, pose2ds.get(0), pose2ds.get(1), pose2ds.subList(2, pose2ds.size()).toArray(new PathPoint[0]));
+        List<PathPoint> withStart = new ArrayList<>();
+        withStart.add(PathPoint.fromCurrentHolonomicState(getPose(), kinematics.toChassisSpeeds(getRealStates())));
+        withStart.addAll(pose2ds);
+        PathPlannerTrajectory path = PathPlanner.generatePath(kSwerve.MAX_VELOCITY_METERS_PER_SECOND, kSwerve.MAX_ACCELERATION, false, withStart.get(0), withStart.get(1), withStart.subList(2, pose2ds.size()).toArray(new PathPoint[0]));
         return commandRunPath(path);
     }
 
