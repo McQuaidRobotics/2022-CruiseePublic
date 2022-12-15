@@ -12,7 +12,6 @@ import com.pathplanner.lib.PathPlannerTrajectory;
 import com.pathplanner.lib.PathPoint;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
-import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.kinematics.*;
 import edu.wpi.first.util.datalog.DataLog;
 import edu.wpi.first.util.datalog.DoubleLogEntry;
@@ -25,7 +24,6 @@ import edu.wpi.first.wpilibj.smartdashboard.Field2d;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
-import edu.wpi.first.wpilibj2.command.SequentialCommandGroup;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Robot;
 import frc.robot.constants.kAuto;
@@ -43,40 +41,30 @@ public class Drives extends SubsystemBase {
 
     private final SwerveModule[] modules;
 
-    private final WPI_Pigeon2 pigeonTwo = new WPI_Pigeon2(kCANIDs.DRIVETRAIN_PIGEON_ID, kSwerve.CANIVORE_NAME);
+    private final WPI_Pigeon2 pigeon = new WPI_Pigeon2(kCANIDs.DRIVETRAIN_PIGEON_ID, kCANIDs.CANIVORE_NAME);
 
-    private final SwerveDriveKinematics kinematics = new SwerveDriveKinematics(
-                    // Front Right
-                    new Translation2d(DRIVETRAIN_TRACKWIDTH_METERS / 2.0, DRIVETRAIN_WHEELBASE_METERS / 2.0),
-                    // Front Left
-                    new Translation2d(DRIVETRAIN_TRACKWIDTH_METERS / 2.0, -DRIVETRAIN_WHEELBASE_METERS / 2.0),
-                    // Back Right
-                    new Translation2d(-DRIVETRAIN_TRACKWIDTH_METERS / 2.0, DRIVETRAIN_WHEELBASE_METERS / 2.0),
-                    // Back Left
-                    new Translation2d(-DRIVETRAIN_TRACKWIDTH_METERS / 2.0, -DRIVETRAIN_WHEELBASE_METERS / 2.0)
-    );
     private final SwerveDriveOdometry odometry;
     private final Field2d field = new Field2d();
 
     private double lastPigeonRotation;
     private DoubleLogEntry pigeonLog;
 
-    private final BasePigeonSimCollection gyroSim = pigeonTwo.getSimCollection();
+    private final BasePigeonSimCollection gyroSim = pigeon.getSimCollection();
 
     public Drives() {
-        pigeonTwo.configFactoryDefault();
-        pigeonTwo.reset();
+        pigeon.configFactoryDefault();
+        pigeon.reset();
 
         SmartDashboard.putData("Field", field);
 
         modules = new SwerveModule[] {
-                new SwerveModule(0, CANIVORE_NAME, kCANIDs.FRONT_RIGHT_DRIVE, kCANIDs.FRONT_RIGHT_STEER, kCANIDs.FRONT_RIGHT_CANCODER, FRONT_RIGHT_MODULE_STEER_OFFSET),
-                new SwerveModule(1, CANIVORE_NAME, kCANIDs.FRONT_LEFT_DRIVE, kCANIDs.FRONT_LEFT_STEER, kCANIDs.FRONT_LEFT_CANCODER, FRONT_LEFT_MODULE_STEER_OFFSET),
-                new SwerveModule(2, CANIVORE_NAME, kCANIDs.REAR_RIGHT_DRIVE, kCANIDs.REAR_RIGHT_STEER, kCANIDs.REAR_RIGHT_CANCODER, REAR_RIGHT_MODULE_STEER_OFFSET),
-                new SwerveModule(3, CANIVORE_NAME, kCANIDs.REAR_LEFT_DRIVE, kCANIDs.REAR_LEFT_STEER, kCANIDs.REAR_LEFT_CANCODER, REAR_LEFT_MODULE_STEER_OFFSET)
+                new SwerveModule(0, kCANIDs.CANIVORE_NAME, kCANIDs.FRONT_RIGHT_DRIVE, kCANIDs.FRONT_RIGHT_STEER, kCANIDs.FRONT_RIGHT_CANCODER, FRONT_RIGHT_MODULE_STEER_OFFSET),
+                new SwerveModule(1, kCANIDs.CANIVORE_NAME, kCANIDs.FRONT_LEFT_DRIVE, kCANIDs.FRONT_LEFT_STEER, kCANIDs.FRONT_LEFT_CANCODER, FRONT_LEFT_MODULE_STEER_OFFSET),
+                new SwerveModule(2, kCANIDs.CANIVORE_NAME, kCANIDs.REAR_RIGHT_DRIVE, kCANIDs.REAR_RIGHT_STEER, kCANIDs.REAR_RIGHT_CANCODER, REAR_RIGHT_MODULE_STEER_OFFSET),
+                new SwerveModule(3, kCANIDs.CANIVORE_NAME, kCANIDs.REAR_LEFT_DRIVE, kCANIDs.REAR_LEFT_STEER, kCANIDs.REAR_LEFT_CANCODER, REAR_LEFT_MODULE_STEER_OFFSET)
         };
 
-        odometry = new SwerveDriveOdometry(kinematics, new Rotation2d(0), getRealPositions(), new Pose2d(new Translation2d(0, 0), new Rotation2d(0)));
+        odometry = new SwerveDriveOdometry(KINEMATICS, new Rotation2d(), getRealPositions(), new Pose2d());
 
         ShuffleboardTab tab = Shuffleboard.getTab("Drives");
 
@@ -105,25 +93,25 @@ public class Drives extends SubsystemBase {
      */
     public Command commandRunGeneratedPath(String pathName) {
         PathPlannerTrajectory path = PathPlanner.loadPath(pathName, kSwerve.MAX_VELOCITY_METERS_PER_SECOND, kSwerve.MAX_ACCELERATION);
-        return commandRunPath(path);
+        return commandRunPath(path).withName("CommandRunPath/" + pathName);
     }
 
     /**
-     * Autonomously move to a pose on the field.
+     * Generate a trajectory based on a list of path points
      */
-    public Command commandDriveTrajectory(List<PathPoint> pose2ds) {
+    public Command commandDriveTrajectory(List<PathPoint> pathPoints) {
         List<PathPoint> withStart = new ArrayList<>();
-        withStart.add(PathPoint.fromCurrentHolonomicState(getPose(), kinematics.toChassisSpeeds(getRealStates())));
-        withStart.addAll(pose2ds);
-        PathPlannerTrajectory path = PathPlanner.generatePath(kSwerve.MAX_VELOCITY_METERS_PER_SECOND, kSwerve.MAX_ACCELERATION, false, withStart.get(0), withStart.get(1), withStart.subList(2, pose2ds.size()).toArray(new PathPoint[0]));
-        return commandRunPath(path);
+        withStart.add(PathPoint.fromCurrentHolonomicState(getPose(), KINEMATICS.toChassisSpeeds(getRealStates())));
+        withStart.addAll(pathPoints);
+        PathPlannerTrajectory path = PathPlanner.generatePath(kSwerve.MAX_VELOCITY_METERS_PER_SECOND, kSwerve.MAX_ACCELERATION, false, withStart.get(0), withStart.get(1), withStart.subList(2, pathPoints.size()).toArray(new PathPoint[0]));
+        return commandRunPath(path).withName("CommandDriveTrajectory");
     }
 
     public Command commandRunPath(PathPlannerTrajectory path) {
         PathPlannerTrajectory.PathPlannerState initialState = path.getInitialState();
         Pose2d startingPose = new Pose2d(initialState.poseMeters.getTranslation(), initialState.holonomicRotation);
 
-        return new SequentialCommandGroup(
+        return Commands.sequence(
                 Commands.runOnce(() -> {
                     field.getObject("traj").setTrajectory(path);
                     field.getObject("beginpos").setPose(startingPose);
@@ -183,11 +171,11 @@ public class Drives extends SubsystemBase {
      * 'forwards' direction.
      */
     public void zeroGyroscope() {
-        pigeonTwo.reset();
+        pigeon.reset();
     }
 
     public Pigeon2 getGyro() {
-        return pigeonTwo;
+        return pigeon;
     }
 
     public Rotation2d getRotation() {
@@ -200,7 +188,7 @@ public class Drives extends SubsystemBase {
      * @param pose New pose.
      */
     public void setOdometryPose(Pose2d pose) {
-        odometry.resetPosition(pigeonTwo.getRotation2d(), getRealPositions(), pose);
+        odometry.resetPosition(pigeon.getRotation2d(), getRealPositions(), pose);
     }
 
     /**
@@ -218,7 +206,7 @@ public class Drives extends SubsystemBase {
      * @param speeds The ChassisSpeeds to drive at.
      */
     public void updateModules(ChassisSpeeds speeds) {
-        updateModules(kinematics.toSwerveModuleStates(speeds));
+        updateModules(KINEMATICS.toSwerveModuleStates(speeds));
     }
 
     /**
@@ -245,16 +233,14 @@ public class Drives extends SubsystemBase {
     @Override
     public void periodic() {
         if(RobotBase.isReal()) {
-            if (pigeonTwo.getRotation2d().getDegrees() != lastPigeonRotation)
-                pigeonLog.append(pigeonTwo.getRotation2d().getDegrees());
-            lastPigeonRotation = pigeonTwo.getRotation2d().getDegrees();
+            if (pigeon.getRotation2d().getDegrees() != lastPigeonRotation)
+                pigeonLog.append(pigeon.getRotation2d().getDegrees());
+            lastPigeonRotation = pigeon.getRotation2d().getDegrees();
         }
 
-        odometry.update(pigeonTwo.getRotation2d(), getRealPositions());
+        odometry.update(pigeon.getRotation2d(), getRealPositions());
         // odometry.addVisionMeasurement(visionMeasure.getVisionPose(odometry.getPoseMeters()), visionMeasure.getTimestamp());
-        
-        SmartDashboard.putNumber("odometry.getEstimatedPositionX", odometry.getPoseMeters().getX());
-        SmartDashboard.putNumber("odometry.getEstimatedPositionY", odometry.getPoseMeters().getY());
+
         var pose = getPose();
         field.setRobotPose(pose);
         //var target = visionMeasure.getObject(0);
@@ -272,7 +258,7 @@ public class Drives extends SubsystemBase {
             module.simulationPeriodic();
         }
 
-        double chassisOmega = kinematics.toChassisSpeeds(getRealStates()).omegaRadiansPerSecond;
+        double chassisOmega = KINEMATICS.toChassisSpeeds(getRealStates()).omegaRadiansPerSecond;
         chassisOmega = Math.toDegrees(chassisOmega);
         gyroSim.addHeading(chassisOmega*0.02);
     }

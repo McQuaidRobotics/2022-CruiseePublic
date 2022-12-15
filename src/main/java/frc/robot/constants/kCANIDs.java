@@ -1,6 +1,8 @@
 package frc.robot.constants;
 
 public class kCANIDs {
+    public static String CANIVORE_NAME = "McQDriveBus";
+
     //Devices
     public static final int PDP = 61;
     public static final int DRIVETRAIN_PIGEON_ID = 33;
