@@ -38,7 +38,7 @@ public class DrivesTest {
     @Test
     public void validateAutoPaths() {
         for(kAuto.Routine routine : kAuto.Routine.values()) {
-            assertDoesNotThrow(() -> drives.runAutoPath(routine.name()));
+            assertDoesNotThrow(() -> drives.commandRunGeneratedPath(routine.name()));
         }
     }
 }

@@ -18,21 +18,21 @@ import frc.robot.constants.kSwerve;
 import frc.robot.utils.SwerveUtil;
 import frc.robot.utils.UnitUtil;
 
-import static frc.robot.constants.kSwerve.kDriveFF;
-import static frc.robot.constants.kSwerve.kSteerFF;
+import static frc.robot.constants.kSwerve.DRIVE_FF;
+import static frc.robot.constants.kSwerve.STEER_FF;
 
 public class SwerveModule {
     public final int moduleNumber;
     private final double angleOffset;
-    private final WPI_TalonFX angleMotor;
+    private final WPI_TalonFX steerMotor;
     private final WPI_TalonFX driveMotor;
     private final WPI_CANCoder angleEncoder;
     private double lastAngle;
 
     private final TalonFXSimCollection driveMotorSim;
-    private final FlywheelSim driveWheelSim = new FlywheelSim(LinearSystemId.identifyVelocitySystem(kDriveFF.kv * kSwerve.WHEEL_CIRCUMFERENCE_METERS / (2 * Math.PI), kDriveFF.ka * kSwerve.WHEEL_CIRCUMFERENCE_METERS / (2 * Math.PI)), DCMotor.getFalcon500(1), kSwerve.DRIVE_GEAR_RATIO);
+    private final FlywheelSim driveWheelSim = new FlywheelSim(LinearSystemId.identifyVelocitySystem(DRIVE_FF.kv * kSwerve.WHEEL_CIRCUMFERENCE_METERS / (2 * Math.PI), DRIVE_FF.ka * kSwerve.WHEEL_CIRCUMFERENCE_METERS / (2 * Math.PI)), DCMotor.getFalcon500(1), kSwerve.DRIVE_GEAR_RATIO);
     private final TalonFXSimCollection steerMotorSim;
-    private final FlywheelSim steeringSim = new FlywheelSim(LinearSystemId.identifyVelocitySystem(kSteerFF.kv, kSteerFF.ka), DCMotor.getFalcon500(1), kSwerve.DRIVE_GEAR_RATIO);
+    private final FlywheelSim steeringSim = new FlywheelSim(LinearSystemId.identifyVelocitySystem(STEER_FF.kv, STEER_FF.ka), DCMotor.getFalcon500(1), kSwerve.DRIVE_GEAR_RATIO);
     private final CANCoderSimCollection steerEncoderSim;
 
 
@@ -45,7 +45,7 @@ public class SwerveModule {
         configAngleEncoder();
 
         /* Angle Motor Config */
-        angleMotor = new WPI_TalonFX(angleMotorID, canbus);
+        steerMotor = new WPI_TalonFX(angleMotorID, canbus);
         configAngleMotor();
 
         /* Drive Motor Config */
@@ -55,7 +55,7 @@ public class SwerveModule {
         lastAngle = getState().angle.getDegrees();
 
         driveMotorSim = driveMotor.getSimCollection();
-        steerMotorSim = angleMotor.getSimCollection();
+        steerMotorSim = steerMotor.getSimCollection();
         steerEncoderSim = angleEncoder.getSimCollection();
     }
 
@@ -67,14 +67,14 @@ public class SwerveModule {
 
         if (percentOutput != 0) {
             double angle = (Math.abs(desiredState.speedMetersPerSecond) <= (kSwerve.MAX_VELOCITY_METERS_PER_SECOND * 0.01)) ? lastAngle : desiredState.angle.getDegrees(); //Prevent rotating module if speed is less then 1%. Prevents Jittering.
-            angleMotor.set(ControlMode.Position, UnitUtil.degreesToFalcon(angle, kSwerve.ANGLE_GEAR_RATIO));
+            steerMotor.set(ControlMode.Position, UnitUtil.degreesToFalcon(angle, kSwerve.ANGLE_GEAR_RATIO));
             lastAngle = angle;
         }
     }
 
     private void resetToAbsolute() {
         double absolutePosition = UnitUtil.degreesToFalcon(getWheelRotation().getDegrees() - angleOffset, kSwerve.ANGLE_GEAR_RATIO);
-        angleMotor.setSelectedSensorPosition(absolutePosition);
+        steerMotor.setSelectedSensorPosition(absolutePosition);
     }
 
     private void configAngleEncoder() {
@@ -90,7 +90,7 @@ public class SwerveModule {
     }
 
     private void configAngleMotor() {
-        angleMotor.configFactoryDefault();
+        steerMotor.configFactoryDefault();
 
         var config = new TalonFXConfiguration();
         SupplyCurrentLimitConfiguration angleSupplyLimit = new SupplyCurrentLimitConfiguration(true, kSwerve.ANGLE_CONTINUOUS_CURRENT_LIMIT, kSwerve.ANGLE_PEAK_CURRENT_LIMIT, kSwerve.ANGLE_PEAK_CURRENT_DURATION);
@@ -100,10 +100,10 @@ public class SwerveModule {
         config.slot0.kF = kSwerve.ANGLE_MOTOR_KF;
         config.supplyCurrLimit = angleSupplyLimit;
         config.initializationStrategy = SensorInitializationStrategy.BootToZero;
-        angleMotor.configAllSettings(config);
+        steerMotor.configAllSettings(config);
 
-        angleMotor.setInverted(false);
-        angleMotor.setNeutralMode(NeutralMode.Brake);
+        steerMotor.setInverted(false);
+        steerMotor.setNeutralMode(NeutralMode.Brake);
         resetToAbsolute();
     }
 
@@ -133,30 +133,30 @@ public class SwerveModule {
 
     public SwerveModuleState getState() {
         double velocity = UnitUtil.falconToMPS(driveMotor.getSelectedSensorVelocity(), kSwerve.WHEEL_CIRCUMFERENCE_METERS, kSwerve.DRIVE_GEAR_RATIO);
-        Rotation2d angle = Rotation2d.fromDegrees(UnitUtil.falconToDegrees(angleMotor.getSelectedSensorPosition(), kSwerve.ANGLE_GEAR_RATIO));
+        Rotation2d angle = Rotation2d.fromDegrees(UnitUtil.falconToDegrees(steerMotor.getSelectedSensorPosition(), kSwerve.ANGLE_GEAR_RATIO));
         return new SwerveModuleState(velocity, angle);
     }
 
     public SwerveModulePosition getPosition() {
         double distance = UnitUtil.positionToMeters(driveMotor.getSelectedSensorPosition(), kSwerve.DRIVE_GEAR_RATIO, kSwerve.WHEEL_CIRCUMFERENCE_METERS);
-        Rotation2d angle = Rotation2d.fromDegrees(UnitUtil.falconToDegrees(angleMotor.getSelectedSensorPosition(), kSwerve.ANGLE_GEAR_RATIO));
+        Rotation2d angle = Rotation2d.fromDegrees(UnitUtil.falconToDegrees(steerMotor.getSelectedSensorPosition(), kSwerve.ANGLE_GEAR_RATIO));
         return new SwerveModulePosition(distance, angle);
     }
 
     public Rotation2d getFalconWheelRotation() {
-        return Rotation2d.fromDegrees(UnitUtil.positionToDegrees(angleMotor.getSelectedSensorPosition(), kSwerve.ANGLE_GEAR_RATIO));
+        return Rotation2d.fromDegrees(UnitUtil.positionToDegrees(steerMotor.getSelectedSensorPosition(), kSwerve.ANGLE_GEAR_RATIO));
     }
 
     public void simulationPeriodic() {
         // apply our commanded voltage to our simulated physics mechanisms
         double driveVoltage = driveMotorSim.getMotorOutputLeadVoltage();
-        if (driveVoltage >= 0) driveVoltage = Math.max(0, driveVoltage - kSteerFF.ks);
-        else driveVoltage = Math.min(0, driveVoltage + kSteerFF.ks);
+        if (driveVoltage >= 0) driveVoltage = Math.max(0, driveVoltage - STEER_FF.ks);
+        else driveVoltage = Math.min(0, driveVoltage + STEER_FF.ks);
         driveWheelSim.setInputVoltage(driveVoltage);
 
         double steerVoltage = steerMotorSim.getMotorOutputLeadVoltage();
-        if (steerVoltage >= 0) steerVoltage = Math.max(0, steerVoltage - kSteerFF.ks);
-        else steerVoltage = Math.min(0, steerVoltage + kSteerFF.ks);
+        if (steerVoltage >= 0) steerVoltage = Math.max(0, steerVoltage - STEER_FF.ks);
+        else steerVoltage = Math.min(0, steerVoltage + STEER_FF.ks);
         steeringSim.setInputVoltage(steerVoltage);
 
         driveWheelSim.update(0.02);
@@ -188,6 +188,6 @@ public class SwerveModule {
     }
 
     public double getSteerCurrentDraw() {
-        return angleMotor.getSupplyCurrent();
+        return steerMotor.getSupplyCurrent();
     }
 }
