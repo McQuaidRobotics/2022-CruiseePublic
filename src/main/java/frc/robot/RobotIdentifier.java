@@ -11,8 +11,8 @@ import java.util.Map;
 
 public class RobotIdentifier {
     private static final Map<String, String> numToName = Map.of(
-            "0306ADF3", "testBoard",
-            "0306ADCF", "lance"
+            "0306adf3", "testBoard",
+            "0306adcf", "lance"
     );
 
     public static String getRobotName() {
@@ -25,6 +25,7 @@ public class RobotIdentifier {
 
     public static void initNetworkTables() {
         NetworkTableInstance instance = NetworkTableInstance.getDefault();
+        instance.getEntry("/serialNum").setString(RobotController.getSerialNumber());
         instance.getEntry("/robotName").setString(getRobotName());
 
         try {
